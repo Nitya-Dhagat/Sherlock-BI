@@ -226,9 +226,15 @@ wk = prod.groupby("week").agg(
 )
 gross = prod[~prod["is_cancel"]].groupby("week")["revenue"].sum().rename("gross_revenue")
 wk = wk.join(gross)
-wk["aov"] = wk["gross_revenue"] / wk["orders"]
-wk["wow_pct"] = wk["net_revenue"].pct_change() * 100
-wk["yoy_pct"] = (wk["net_revenue"] / wk["net_revenue"].shift(52) - 1) * 100
+# weeks with zero sales (Christmas shutdowns) are absent from groupby; reinsert them as zeros
+# so that shift(52) is exactly one year back
+wk = wk.reindex(pd.date_range(wk.index.min(), wk.index.max(), freq="7D"))
+wk.index.name = "week"
+zero_cols = ["net_revenue", "gross_revenue", "orders", "active_customers", "trading_days"]
+wk[zero_cols] = wk[zero_cols].fillna(0)
+wk["aov"] = wk["gross_revenue"] / wk["orders"].replace(0, np.nan)
+wk["wow_pct"] = (wk["net_revenue"].pct_change() * 100).replace([np.inf, -np.inf], np.nan)
+wk["yoy_pct"] = ((wk["net_revenue"] / wk["net_revenue"].shift(52) - 1) * 100).replace([np.inf, -np.inf], np.nan)
 last_week = wk.index.max()
 wk["partial_final_week"] = wk.index == last_week
 yoy = wk["yoy_pct"].dropna()
