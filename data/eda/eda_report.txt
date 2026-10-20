@@ -1,0 +1,508 @@
+
+==========================================================================================
+0. LOAD AND BASIC SHAPE
+==========================================================================================
+columns: ['invoice', 'stock_code', 'description', 'quantity', 'invoice_date', 'unit_price', 'customer_id', 'country', 'source_sheet']
+dtypes:
+invoice                 string
+stock_code              string
+description             string
+quantity                 int64
+invoice_date    datetime64[us]
+unit_price             float64
+customer_id            float64
+country                 string
+source_sheet               str
+rows: 1,067,371
+date range: 2009-12-01 07:45:00 -> 2011-12-09 12:50:00
+distinct invoices: 53,628 | customers: 5,942 | stock codes: 5,131 | countries: 43
+null counts:
+invoice              0
+stock_code           0
+description       4382
+quantity             0
+invoice_date         0
+unit_price           0
+customer_id     243007
+country              0
+source_sheet         0
+revenue              0
+rows per sheet:
+source_sheet
+Year 2010-2011    541910
+Year 2009-2010    525461
+date range per sheet:
+                               min                 max
+source_sheet                                          
+Year 2009-2010 2009-12-01 07:45:00 2010-12-09 20:01:00
+Year 2010-2011 2010-12-01 08:26:00 2011-12-09 12:50:00
+
+==========================================================================================
+1. DUPLICATES AND SHEET OVERLAP
+==========================================================================================
+exact duplicate rows (all key columns): 34,335 (3.22%)
+revenue in those duplicates: 431,717
+rows in 2010-11-25..2010-12-15 window: 68,733 | duplicates inside window: 23,228
+duplicated row-groups whose copies sit in DIFFERENT sheets: 22,202 | duplicated row-groups total: 32,907
+rows after dedupe: 1,033,036  (all analysis below uses deduped data)
+
+==========================================================================================
+2. INVOICE PREFIXES (C = cancellation, A = adjustment)
+==========================================================================================
+           rows  invoices       revenue     units
+prefix                                           
+A             6         6   -147,614.08         6
+C         19104      8292 -1,462,050.61   -476819
+none    1013926     45330 20,465,198.39  10886592
+invoice length counts:
+invoice
+6    1013926
+7      19110
+
+cancellation revenue share of regular revenue, by month:
+prefix   cancel_share_of_gross
+month                         
+2009-12                   0.03
+2010-01                   0.04
+2010-02                   0.04
+2010-03                   0.08
+2010-04                   0.06
+2010-05                   0.07
+2010-06                   0.10
+2010-07                   0.05
+2010-08                   0.06
+2010-09                   0.08
+2010-10                   0.07
+2010-11                   0.03
+2010-12                   0.09
+2011-01                   0.19
+2011-02                   0.05
+2011-03                   0.05
+2011-04                   0.08
+2011-05                   0.06
+2011-06                   0.09
+2011-07                   0.05
+2011-08                   0.07
+2011-09                   0.04
+2011-10                   0.07
+2011-11                   0.03
+2011-12                   0.32
+
+cancellation lines with a customer:  18,390 | with an earlier purchase of same customer+stock_code: 16,330 (88.8%)
+
+==========================================================================================
+3. NON-PRODUCT STOCK CODES
+==========================================================================================
+rows with product-like code (5 digits + optional letters): 99.42%
+distinct non-product-like codes: 61
+              rows     revenue  units                         example_desc
+stock_code                                                                
+POST          2086  110,430.41  10011                              POSTAGE
+DOT           1425  309,844.10   2917                       DOTCOM POSTAGE
+M             1392  -83,311.28   4198                               Manual
+C2             277   13,136.00    711                             CARRIAGE
+D              173  -12,879.63  -2868                             Discount
+S              101   -5,991.11    -95                              SAMPLES
+BANK CHARGES   100  -35,482.25    -42                         Bank Charges
+ADJUST          67    6,835.24      5  Adjustment by john on 26/01/2010 16
+AMAZONFEE       36 -221,520.50    -30                           AMAZON FEE
+DCGS0058        31       34.82     43                     MISO PRETTY  GUM
+GIFT_0001_20    29      471.06     53   Dotcomgiftshop Gift Voucher £20.00
+GIFT_0001_30    29      610.09     77   Dotcomgiftshop Gift Voucher £30.00
+DCGSSGIRL       25      295.63    191                               update
+DCGSSBOY        23      251.35     87                               update
+PADS            19      -36.58     17           PADS TO MATCH ALL CUSHIONS
+GIFT_0001_10    16      126.21     55   Dotcomgiftshop Gift Voucher £10.00
+CRUK            16   -7,933.43    -16                      CRUK Commission
+TEST001         15      202.50     55              This is a test product.
+DCGS0076        14      275.96     17         SUNJAR LED NIGHT NIGHT LIGHT
+DCGS0003        14       32.59      6                  BOXED GLASS ASHTRAY
+GIFT_0001_50     8      253.59     19   Dotcomgiftshop Gift Voucher £50.00
+GIFT_0001_40     7      166.09     18   Dotcomgiftshop Gift Voucher £40.00
+DCGS0069         6       80.31      0                OOH LA LA DOGS COLLAR
+B                6 -147,614.08      6                      Adjust bad debt
+DCGS0004         5       67.94      2           HAYNES CAMPER SHOULDER BAG
+DCGS0072         4       20.68      3               CAT CAMOUFLAGUE COLLAR
+DCGS0066N        4       17.30      4              NAVY CUDDLES DOG HOODIE
+GIFT_0001_80     4        0.00     12   Dotcomgiftshop Gift Voucher £80.00
+ADJUST2          3      731.05      3  Adjustment by Peter on Jun 25 2010 
+SP1002           3       14.75    -22               KID'S CHALKBOARD/EASEL
+DCGS0070         3       25.44     -6                CAMOUFLAGE DOG COLLAR
+DCGS0068         3       17.12     -8                    DOGS NIGHT COLLAR
+GIFT_0001_70     3       59.57     13   Dotcomgiftshop Gift Voucher £70.00
+DCGS0037         2       12.72      0                   KEY-RING CORKSCREW
+GIFT_0001_60     2        0.00     13                                     
+GIFT_0001_90     2        0.00     12                                     
+TEST002          2        1.00      2              This is a test product.
+DCGS0062         2        2.51      0              ROAD-RAGE CAR FRESHENER
+DCGS0039         1        0.00     -1                                     
+DCGS0027         1        0.00     -1                                     
+
+total revenue in non-product-like codes: -70,732 | share of all revenue: -0.38%
+
+==========================================================================================
+4. QUANTITY AND PRICE ODDITIES
+==========================================================================================
+unit_price <= 0 rows: 6,019 | price == 0: 6,014 | price < 0: 5
+zero-price rows with customer_id: 1.2% | sample descriptions: {'check': 160, '?': 90, 'damages': 83, 'damaged': 81, 'found': 28, 'missing': 27, 'sold as set on dotcom': 20, 'Damaged': 17}
+negative quantity on NON-cancellation invoices: 3,393 | of which price == 0: 3,393
+positive quantity on cancellation invoices: 1
+
+quantity quantiles (product-like, price>0):
+0.00   -80,995.00
+0.00       -32.00
+0.01        -2.00
+0.25         1.00
+0.50         3.00
+0.75        10.00
+0.99       100.00
+1.00       484.00
+1.00    80,995.00
+
+unit_price quantiles (product-like, price>0):
+0.00       0.03
+0.01       0.29
+0.25       1.25
+0.50       2.10
+0.75       4.13
+0.99      16.95
+1.00      35.95
+1.00   1,157.15
+
+top 10 extreme quantity lines:
+         invoice stock_code  quantity  unit_price  customer_id        invoice_date
+1065883  C581484      23843    -80995        2.08    16,446.00 2011-12-09 09:27:00
+1065882   581483      23843     80995        2.08    16,446.00 2011-12-09 09:15:00
+587085   C541433      23166    -74215        1.04    12,346.00 2011-01-18 10:17:00
+587080    541431      23166     74215        1.04    12,346.00 2011-01-18 10:01:00
+90857     497946      37410     19152        0.10    13,902.00 2010-02-15 11:57:00
+127168    501534      21091     12960        0.10    13,902.00 2010-03-17 13:09:00
+127166    501534      21099     12960        0.10    13,902.00 2010-03-17 13:09:00
+127169    501534      21085     12744        0.10    13,902.00 2010-03-17 13:09:00
+1027583   578841      84826     12540        0.00    13,256.00 2011-11-25 15:57:00
+127167    501534      21092     12480        0.10    13,902.00 2010-03-17 13:09:00
+
+top 10 extreme price lines (product-like):
+       invoice stock_code  quantity  unit_price  customer_id
+192196  507637      84016         1    1,157.15          NaN
+136403  502451      84016         1      867.79          NaN
+748132  556444      22502        60      649.50    15,098.00
+748143  556446      22502         1      649.50    15,098.00
+180997  506571      84016         1      408.40          NaN
+292666  517930      22655         1      295.00    15,727.00
+291647  517766      22656         1      295.00    14,427.00
+292603  517909      22655         1      295.00    18,260.00
+659468  547814      22656         1      295.00    13,452.00
+275451  516164      22655         1      295.00    15,151.00
+
+PRODUCT-LINE frame rows: 1,021,128 | net revenue: 18,926,266 | gross revenue: 19,642,692
+
+==========================================================================================
+5. DESCRIPTIONS
+==========================================================================================
+blank/null descriptions: 4,275 | of which price == 0: 100.0%
+product codes with >1 distinct description: 624 of 4,721
+sample multi-description codes:
+   15058A ['BLUE WHITE SPOTS GARDEN PARASOL', 'BLUE POLKADOT GARDEN PARASOL']
+   15058B ['PINK WHITE SPOTS GARDEN PARASOL', 'PINK POLKADOT GARDEN PARASOL']
+   16011 [' ANIMAL STICKERS', 'ANIMAL STICKERS']
+   16012 ['FOOD/DRINK SPUNGE STICKERS', 'FOOD/DRINK SPONGE STICKERS']
+   16151A ['FLOWER DES BLUE HANDBAG/ORANG HANDL', 'FLOWERS HANDBAG blue and orange']
+distinct product codes: 4721 | distinct descriptions: 5374
+
+==========================================================================================
+6. MISSING customer_id
+==========================================================================================
+share of product-line ROWS without customer_id: 22.23%
+share of product-line REVENUE without customer_id: 13.57%
+         rev_share_no_cust  row_share_no_cust
+month                                        
+2009-12               0.15               0.30
+2010-01               0.13               0.29
+2010-02               0.08               0.17
+2010-03               0.13               0.20
+2010-04               0.10               0.18
+2010-05               0.08               0.15
+2010-06               0.10               0.20
+2010-07               0.08               0.17
+2010-08               0.12               0.19
+2010-09               0.08               0.16
+2010-10               0.08               0.14
+2010-11               0.20               0.21
+2010-12               0.28               0.37
+2011-01               0.19               0.38
+2011-02               0.13               0.26
+2011-03               0.16               0.24
+2011-04               0.13               0.22
+2011-05               0.11               0.21
+2011-06               0.11               0.24
+2011-07               0.14               0.30
+2011-08               0.13               0.21
+2011-09               0.09               0.19
+2011-10               0.09               0.16
+2011-11               0.22               0.23
+2011-12               0.23               0.31
+
+anonymous (True) vs identified (False) buyers:
+          lines  invoices  avg_line_value  avg_qty  avg_invoice_value
+no_cust                                                              
+False    776577     36594           21.98    13.52             466.43
+True     226637      2922           11.36     3.04             880.95
+
+country mix of anonymous rows (top 5):
+country
+United Kingdom   0.99
+EIRE             0.01
+Hong Kong        0.00
+Unspecified      0.00
+France           0.00
+
+==========================================================================================
+7. DATE COVERAGE
+==========================================================================================
+calendar days in range: 739 | days with sales: 604
+     days  days_with_sales   avg_rev
+Mon   105               94 31,584.02
+Tue   106              104 34,849.50
+Wed   106              104 31,142.09
+Thu   106              103 36,842.49
+Fri   106               99 27,660.20
+Sat   105                1     93.36
+Sun   105               99 16,835.69
+
+zero-sales days that are NOT Saturdays (likely holidays/shutdown), first 40:
+2009-12-24, 2009-12-25, 2009-12-27, 2009-12-28, 2009-12-29, 2009-12-30, 2009-12-31, 2010-01-01, 2010-01-03, 2010-04-02, 2010-04-04, 2010-04-05, 2010-05-03, 2010-05-31, 2010-08-30, 2010-12-24, 2010-12-26, 2010-12-27, 2010-12-28, 2010-12-29, 2010-12-30, 2010-12-31, 2011-01-02, 2011-01-03, 2011-04-22, 2011-04-24, 2011-04-25, 2011-04-29, 2011-05-02, 2011-05-30, 2011-08-29
+
+first/last day of data: 2009-12-01 2011-12-09 | last invoice timestamp: 2011-12-09 12:50:00
+
+==========================================================================================
+8. WEEKLY NET-REVENUE SERIES AND CANDIDATE DIPS
+==========================================================================================
+weeks: 104 | first week: 2009-11-30 | last (partial?) week: 2011-12-05
+
+weekly net revenue, full table is in data/eda/weekly_metrics.csv. Quantiles:
+0.00    49,806.05
+0.10   119,038.06
+0.25   136,961.33
+0.50   161,315.85
+0.75   208,927.17
+0.90   295,805.98
+1.00   369,126.18
+
+CANDIDATE DIPS (yoy z < -1.5 or WoW < -35%, excluding final partial week):
+            net_revenue  orders  active_customers    aov  trading_days  wow_pct  yoy_pct  yoy_z
+week                                                                                           
+2009-12-21    49,806.05     107                75 482.74             3   -79.99      NaN    NaN
+2010-12-20    82,578.96     158               120 538.98             4   -59.16   -66.82  -1.98
+2011-04-25    81,431.31     212               194 393.28             4   -28.49   -49.73  -1.53
+2011-09-26   202,352.24     441               415 468.26             6   -36.71   -14.21  -0.58
+
+November peak weeks:
+            net_revenue  orders  trading_days
+week                                         
+2011-11-14   369,126.18     687             6
+2010-11-08   359,362.74     657             6
+2011-11-07   350,123.40     634             6
+2010-11-15   342,717.74     633             6
+2011-09-19   319,745.94     463             6
+2011-12-05   310,943.36     509             5
+2010-11-29   309,008.89     652             6
+2011-11-28   306,111.77     663             6
+
+==========================================================================================
+9. COUNTRY MIX
+==========================================================================================
+                      revenue  customers  invoices  share  cum_share
+country                                                             
+United Kingdom  16,167,773.06       5357     42778   0.85       0.85
+EIRE               603,116.61          3       727   0.03       0.89
+Netherlands        546,095.43         22       227   0.03       0.91
+Germany            374,573.51        107      1035   0.02       0.93
+France             293,431.20         93       709   0.02       0.95
+Australia          166,282.15         15       108   0.01       0.96
+Switzerland         92,918.06         22       111   0.00       0.96
+Spain               84,811.56         38       168   0.00       0.97
+Sweden              84,345.17         19       114   0.00       0.97
+Denmark             63,355.59         12        50   0.00       0.98
+Belgium             56,598.89         29       172   0.00       0.98
+Portugal            46,707.99         23       106   0.00       0.98
+Channel Islands     41,841.81         13        75   0.00       0.98
+Japan               39,746.77         10        53   0.00       0.99
+Norway              38,413.68         12        41   0.00       0.99
+
+countries: 43 | with >= 50 customers: 3 | with >= 10 customers: 18
+'Unspecified' revenue share: 0.058%
+
+UK share by calendar year:
+uk          False         True  uk_share
+year                                    
+2009    68,819.27   709,360.67      0.91
+2010 1,266,906.80 7,868,284.10      0.86
+2011 1,422,767.05 7,590,128.29      0.84
+
+==========================================================================================
+10. CUSTOMER CONCENTRATION AND PROFILE
+==========================================================================================
+identified customers: 5,875
+top-10 revenue share: 16.26% | top-1%: 31.06% | top-10%: 63.31%
+
+customer net_revenue quantiles (heavy-tailed?):
+0.00    -1,343.24
+0.10       154.61
+0.25       327.80
+0.50       835.22
+0.75     2,164.28
+0.90     5,198.47
+0.99    26,428.76
+1.00   578,408.64
+skew: 26.9 | log-skew: -0.40
+
+orders per customer quantiles:
+0.10    1.00
+0.25    1.00
+0.50    3.00
+0.75    7.00
+0.90   13.00
+0.99   46.00
+one-time customers (1 order): 27.5%
+
+customers active in 2010 AND 2011: 2,677 | only 2010: 1,368 | only 2011: 1,531
+
+avg units per order (customer level) quantiles, for wholesale vs retail cut:
+0.10    52.00
+0.25    92.00
+0.50   155.00
+0.75   259.81
+0.90   407.48
+avg order value quantiles:
+0.10   118.05
+0.25   176.15
+0.50   277.87
+0.75   410.56
+0.90   624.03
+correlation of avg_order_value with avg_units_per_order: 0.56
+
+==========================================================================================
+11. PURCHASE RHYTHM (decides the 'lost customer' window)
+==========================================================================================
+distinct order-days: 32,878 | gaps: 27,026
+gap days quantiles (all gaps):
+0.25    13.00
+0.50    32.00
+0.75    70.00
+0.90   148.00
+0.95   221.00
+0.99   377.00
+
+per-customer median gap quantiles:
+0.25    34.00
+0.50    64.00
+0.75   131.00
+0.90   243.20
+0.95   348.10
+share of all gaps longer than 30 days: 51.0%
+share of all gaps longer than 60 days: 29.2%
+share of all gaps longer than 90 days: 19.4%
+share of all gaps longer than 120 days: 13.5%
+share of all gaps longer than 180 days: 7.3%
+
+customers whose last order was > 90 / 180 / 365 days before data end: 50.3% / 40.4% / 26.7%
+
+==========================================================================================
+12. PRODUCTS, PRICES, AVAILABILITY
+==========================================================================================
+product codes sold: 4,707 | top-50 revenue share: 19.51% | top-500 share: 63.26%
+share of products with more than one price: 90.1% | among top-50 products: 98.0%
+product lifespan days quantiles:
+0.10    74.60
+0.25   231.00
+0.50   540.00
+0.75   727.00
+0.90   737.00
+products first sold in the last 90 days of data: 209 | last sold more than 90 days before the end: 1551
+
+top 15 products by revenue:
+                                    description    revenue  units  n_prices  median_price
+stock_code                                                                               
+22423                  REGENCY CAKESTAND 3 TIER 330,590.32  26478        13         12.75
+85123A       WHITE HANGING HEART T-LIGHT HOLDER 261,168.73  94719        16          2.95
+85099B                  JUMBO BAG RED RETROSPOT 182,680.98  97176        14          1.95
+23843               PAPER CRAFT , LITTLE BIRDIE 168,469.60  80995         1          2.08
+47566                             PARTY BUNTING 148,318.28  28200        17          4.95
+84879             ASSORTED COLOUR BIRD ORNAMENT 129,324.49  80082        10          1.69
+22086           PAPER CHAIN KIT 50'S CHRISTMAS  117,760.29  35084        11          2.95
+23166            MEDIUM CERAMIC TOP STORAGE JAR  81,700.92  78033         3          1.25
+79321                             CHILLI LIGHTS  80,540.88  15841        17          4.95
+22197                      SMALL POPCORN HOLDER  79,520.20  88499         8          0.85
+22386                   JUMBO BAG PINK POLKADOT  76,324.62  39437        13          1.95
+84347       ROTATING SILVER ANGELS T-LIGHT HLDR  71,300.40  31409        13          2.55
+20725                   LUNCH BAG RED RETROSPOT  71,106.29  40317        12          1.65
+85099F                     JUMBO BAG STRAWBERRY  69,002.13  37061        13          1.95
+48138                        DOORMAT UNION FLAG  67,010.31  10077        18          7.49
+
+==========================================================================================
+13. INVOICE / BASKET LEVEL
+==========================================================================================
+invoice value quantiles:
+0.10      63.36
+0.25     150.32
+0.50     301.23
+0.75     484.40
+0.90     905.56
+0.99   4,103.92
+units per invoice quantiles:
+0.10      22.00
+0.25      67.00
+0.50     148.00
+0.75     289.00
+0.90     523.00
+0.99   2,224.00
+lines per invoice quantiles:
+0.10     2.00
+0.25     6.00
+0.50    15.00
+0.75    28.00
+0.90    51.00
+0.99   196.85
+
+invoices by weekday (0=Mon):
+dow
+0    6245
+1    7147
+2    7115
+3    8167
+4    5988
+5      30
+6    4824
+invoices by hour:
+hour
+6        1
+7       76
+8      995
+9     2720
+10    4563
+11    4837
+12    6368
+13    5638
+14    4974
+15    4487
+16    2628
+17    1381
+18     465
+19     330
+20      53
+
+==========================================================================================
+14. FEATURE CANDIDATES (inventory of what can be engineered)
+==========================================================================================
+Customer-level (as of a period start, no look-ahead):
+  recency_days, frequency (orders), monetary (net/gross revenue), avg_order_value, avg_units_per_order,
+  distinct_products, cancel_line_rate, tenure_days, median_gap_days, country, is_uk, is_new/returning, RFM tier
+Order-level:
+  value, units, lines, weekday, hour, is_cancel, has_customer_id
+Product-level:
+  revenue, units, n_prices, price change %, first/last sale (launch / dropped), lifespan, category
+Calendar / period-level:
+  trading_days, ISO week, month, UK holiday flags, days to Christmas, partial-period flag
+Weekly aggregates:
+  net_revenue, gross_revenue, orders, active_customers, aov, wow_pct, yoy_pct
