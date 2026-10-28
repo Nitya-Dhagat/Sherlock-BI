@@ -1,0 +1,119 @@
+[
+ {
+  "type": "run_started",
+  "run_id": "r_stub_no_anomaly",
+  "question": "Why did revenue drop in May and June 2011?",
+  "ts": 0.0,
+  "prompt_version": "stub-v1",
+  "data_through": "2011-12-09"
+ },
+ {
+  "type": "step_started",
+  "step": 1,
+  "tool": "detect_anomaly",
+  "title": "Checking whether revenue actually dropped",
+  "input": {
+   "metric": "net_revenue",
+   "period": {
+    "start": "2011-09-26",
+    "end": "2011-11-20"
+   },
+   "compare_to": "same_period_last_year"
+  }
+ },
+ {
+  "type": "step_finished",
+  "step": 1,
+  "tool": "detect_anomaly",
+  "status": "ok",
+  "evidence_id": "E1",
+  "title": "Checking whether revenue actually dropped",
+  "summary": "Revenue is 1.5% ABOVE the same period last year (z = 0.3); there is no drop to explain.",
+  "result": {
+   "evidence_id": "E1",
+   "definition": "net_revenue = sum(quantity*unit_price) over product lines; cancellations negative; unattributed rows included",
+   "data_through": "2011-12-09",
+   "metric": "net_revenue",
+   "actual": 884120.4,
+   "expected": 871300.0,
+   "change_pct": 1.5,
+   "z_score": 0.3,
+   "severity": "none",
+   "method": "yoy",
+   "baseline": {
+    "start": "2010-09-27",
+    "end": "2010-11-21"
+   },
+   "trading_days": {
+    "actual": 40,
+    "expected": 40
+   },
+   "trading_day_adjusted": true,
+   "partial_period_excluded": true,
+   "checks": [
+    {
+     "method": "yoy",
+     "change_pct": -13.7,
+     "z_score": -2.4
+    },
+    {
+     "method": "stl",
+     "change_pct": -11.9,
+     "z_score": -2.1
+    }
+   ],
+   "period": {
+    "start": "2011-05-02",
+    "end": "2011-06-26"
+   }
+  },
+  "duration_ms": 790
+ },
+ {
+  "type": "report",
+  "report": {
+   "headline": "Revenue did not drop in this period. It was 1.5% above the same period last year, well inside normal variation.",
+   "findings": [
+    {
+     "text": "Net revenue was \u00a3884.1k against \u00a3871.3k a year earlier, up 1.5% (z = 0.3).",
+     "evidence_ids": [
+      "E1"
+     ]
+    },
+    {
+     "text": "Trading days were identical at 40, so no calendar adjustment is needed.",
+     "evidence_ids": [
+      "E1"
+     ]
+    }
+   ],
+   "actions": [
+    {
+     "text": "No action needed. If you have a particular segment in mind, ask again and I will test that segment directly.",
+     "evidence_ids": []
+    }
+   ],
+   "hypotheses": []
+  },
+  "confidence": {
+   "score": 0.0,
+   "band": "Low",
+   "components": {
+    "coverage": 0.0,
+    "significance": 0.0,
+    "specificity": 0.0,
+    "robustness": 0.0
+   },
+   "flags": [
+    "no_anomaly_detected"
+   ]
+  }
+ },
+ {
+  "type": "run_finished",
+  "run_id": "r_stub_no_anomaly",
+  "status": "ok",
+  "steps": 1,
+  "duration_ms": 790
+ }
+]

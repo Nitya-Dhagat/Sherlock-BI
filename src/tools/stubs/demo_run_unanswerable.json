@@ -1,0 +1,186 @@
+[
+ {
+  "type": "run_started",
+  "run_id": "r_stub_unanswerable",
+  "question": "Did a competitor cause our revenue to drop?",
+  "ts": 0.0,
+  "prompt_version": "stub-v1",
+  "data_through": "2011-12-09"
+ },
+ {
+  "type": "step_started",
+  "step": 1,
+  "tool": "detect_anomaly",
+  "title": "Checking whether the drop is real",
+  "input": {
+   "metric": "net_revenue",
+   "period": {
+    "start": "2011-09-26",
+    "end": "2011-11-20"
+   },
+   "compare_to": "same_period_last_year"
+  }
+ },
+ {
+  "type": "step_finished",
+  "step": 1,
+  "tool": "detect_anomaly",
+  "status": "ok",
+  "evidence_id": "E1",
+  "title": "Checking whether the drop is real",
+  "summary": "Net revenue is 13.7% below the same period last year (z = \u22122.4), after adjusting for two fewer trading days.",
+  "result": {
+   "evidence_id": "E1",
+   "definition": "net_revenue = sum(quantity*unit_price) over product lines; cancellations negative; unattributed rows included",
+   "data_through": "2011-12-09",
+   "metric": "net_revenue",
+   "actual": 812340.55,
+   "expected": 941200.1,
+   "change_pct": -13.7,
+   "z_score": -2.4,
+   "severity": "high",
+   "method": "yoy",
+   "baseline": {
+    "start": "2010-09-27",
+    "end": "2010-11-21"
+   },
+   "trading_days": {
+    "actual": 38,
+    "expected": 40
+   },
+   "trading_day_adjusted": true,
+   "partial_period_excluded": true,
+   "checks": [
+    {
+     "method": "yoy",
+     "change_pct": -13.7,
+     "z_score": -2.4
+    },
+    {
+     "method": "stl",
+     "change_pct": -11.9,
+     "z_score": -2.1
+    }
+   ]
+  },
+  "duration_ms": 790
+ },
+ {
+  "type": "step_started",
+  "step": 2,
+  "tool": "drill_down",
+  "title": "Finding where it happened",
+  "input": {
+   "metric": "net_revenue",
+   "period": {
+    "start": "2011-09-26",
+    "end": "2011-11-20"
+   },
+   "compare_to": "same_period_last_year",
+   "dimensions": [
+    "country",
+    "customer_type"
+   ],
+   "top_k": 5
+  }
+ },
+ {
+  "type": "step_finished",
+  "step": 2,
+  "tool": "drill_down",
+  "status": "ok",
+  "evidence_id": "E2",
+  "title": "Finding where it happened",
+  "summary": "Wholesale-like customers explain 78% of the net change; the UK carries 71%.",
+  "result": {
+   "evidence_id": "E2",
+   "definition": "net_revenue = sum(quantity*unit_price) over product lines; cancellations negative; unattributed rows included",
+   "data_through": "2011-12-09",
+   "total_change": -128860.2,
+   "gross_decline": -146500.0,
+   "contributors": {
+    "country": [
+     {
+      "value": "United Kingdom",
+      "change": -91200.0,
+      "pct_change": -11.1,
+      "share_of_net_change": 0.71,
+      "share_of_gross_decline": 0.62,
+      "n_customers": 1480
+     },
+     {
+      "value": "Germany",
+      "change": -12400.0,
+      "pct_change": -18.0,
+      "share_of_net_change": 0.1,
+      "share_of_gross_decline": 0.08,
+      "n_customers": 52
+     }
+    ],
+    "customer_type": [
+     {
+      "value": "wholesale_like",
+      "change": -101000.0,
+      "pct_change": -15.2,
+      "share_of_net_change": 0.78,
+      "share_of_gross_decline": 0.69,
+      "n_customers": 640
+     }
+    ]
+   }
+  },
+  "duration_ms": 980
+ },
+ {
+  "type": "report",
+  "report": {
+   "headline": "This cannot be determined from the data available.",
+   "findings": [
+    {
+     "text": "Net revenue did fall 13.7% year on year over this period.",
+     "evidence_ids": [
+      "E1"
+     ]
+    },
+    {
+     "text": "Attributing it to a competitor needs competitor pricing, win/loss records or market share. None are in this dataset, which holds only this retailer's own transactions.",
+     "evidence_ids": []
+    }
+   ],
+   "actions": [
+    {
+     "text": "Connect a competitor pricing feed or CRM win/loss data. I can then test whether lapsed accounts cluster around competitor activity.",
+     "evidence_ids": []
+    }
+   ],
+   "hypotheses": [
+    "A competitor may have undercut pricing on the affected lines (cannot be verified from this data)."
+   ],
+   "data_gaps": [
+    "competitor pricing",
+    "CRM win/loss",
+    "market share"
+   ]
+  },
+  "confidence": {
+   "score": 22.0,
+   "band": "Low",
+   "components": {
+    "coverage": 0.0,
+    "significance": 0.74,
+    "specificity": 0.0,
+    "robustness": 0.3
+   },
+   "flags": [
+    "question_not_answerable_from_available_data"
+   ]
+  }
+ },
+ {
+  "type": "run_finished",
+  "run_id": "r_stub_unanswerable",
+  "status": "ok",
+  "steps": 2,
+  "duration_ms": 1770
+ }
+]

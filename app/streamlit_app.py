@@ -48,7 +48,7 @@ def _find_root(start: Path) -> Path:
 
 
 ROOT = _find_root(HERE)
-for p in (str(HERE), str(ROOT)):
+for p in (str(HERE), str(ROOT), str(ROOT / "src")):     # src/ holds the agent package (live mode)
     if p not in sys.path:
         sys.path.insert(0, p)
 
@@ -128,7 +128,7 @@ STRENGTH_WORD = {"supporting": "Supported by the data", "weak": "Weak evidence",
 # state
 # --------------------------------------------------------------------------
 DEFAULTS = {"events": [], "evidence": {}, "norm": {}, "raw": {}, "report": None,
-            "confidence": None, "run_meta": {}, "running": False, "source_label": ""}
+            "confidence": None, "run_meta": {}, "running": False, "source_label": "", "run_error": ""}
 for k, v in DEFAULTS.items():
     st.session_state.setdefault(k, v if not isinstance(v, (list, dict)) else type(v)())
 
@@ -141,6 +141,7 @@ def reset_run():
     st.session_state.report = None
     st.session_state.confidence = None
     st.session_state.run_meta = {}
+    st.session_state.run_error = ""
 
 
 def absorb(ev: dict):
@@ -194,7 +195,7 @@ def events_from_fixtures(filename="demo_run.json"):
     path = STUBS / filename
     if not path.exists():
         st.error(f"No fixture run at {path}\n\n"
-                 "Run:  python src/tools/stubs/make_fixtures.py")
+                 "Run:  python src/tools/stubs/build_demo_run.py")
         return []
     return json.loads(path.read_text())
 
@@ -205,7 +206,8 @@ def events_from_cache(name):
 
 def events_live(question):
     from agent.loop import run_investigation   # lazy: UI must work without it
-    yield from run_investigation(question)
+    from agent.ui_events import to_ui_events    # loop events -> this app's event names
+    yield from to_ui_events(run_investigation(question))
 
 
 def save_to_cache(events, question):
@@ -545,6 +547,9 @@ eve_slot = eve_col.empty()
 # --------------------------------------------------------------------------
 # run
 # --------------------------------------------------------------------------
+if st.session_state.run_error and not run:
+    st.error(st.session_state.run_error)
+
 if run:
     reset_run()
     st.session_state.source_label = mode
@@ -553,12 +558,7 @@ if run:
     elif mode == "Replay cached":
         source = iter(events_from_cache(cache_pick)) if cache_pick else iter([])
     else:
-        try:
-            source = events_live(question)
-        except Exception as e:
-            st.error(f"Live agent unavailable: {e}\n\n"
-                     "Switch the sidebar to Fixtures or Replay.")
-            source = iter([])
+        source = events_live(question)      # a generator: import errors surface in the loop below
 
     collected = []
     try:
@@ -574,7 +574,13 @@ if run:
             if mode != "Live agent" and pace:
                 time.sleep(pace)
     except Exception as e:
-        st.error(f"The run stopped: {e}")
+        # kept in session state: st.rerun() below would otherwise wipe an st.error immediately
+        st.session_state.run_error = (f"The run stopped: {type(e).__name__}: {e}. "
+                                      "Switch the sidebar to Fixtures or Replay cached.")
+    if not st.session_state.run_error:
+        fin = next((e for e in collected if e.get("type") == "run_finished"), {})
+        if fin.get("status") == "error":
+            st.session_state.run_error = f"The agent stopped: {fin.get('message', 'unknown error')}"
 
     if mode == "Live agent" and collected:
         saved = save_to_cache(collected, question)

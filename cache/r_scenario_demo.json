@@ -1,0 +1,672 @@
+[
+ {
+  "type": "run_started",
+  "run_id": "r_20261028_120523",
+  "question": "Why did revenue drop between 2011-09-26 and 2011-11-20 compared with last year?",
+  "ts": 0.0,
+  "prompt_version": "system_v1",
+  "model": "gemini-3.5-flash",
+  "data_through": "2011-12-09"
+ },
+ {
+  "type": "step_started",
+  "step": 1,
+  "tool": "detect_anomaly",
+  "title": "Checking whether the drop is real",
+  "input": {
+   "period": {
+    "start": "2011-09-26",
+    "end": "2011-11-20"
+   },
+   "compare_to": "same_period_last_year",
+   "metric": "net_revenue"
+  }
+ },
+ {
+  "type": "step_finished",
+  "step": 1,
+  "tool": "detect_anomaly",
+  "title": "Checking whether the drop is real",
+  "evidence_id": "E1",
+  "duration_ms": 0,
+  "status": "ok",
+  "result": {
+   "evidence_id": "E1",
+   "metric": "net_revenue",
+   "actual": 1908898.36,
+   "expected": 2257638.78,
+   "change_pct": -15.45,
+   "z_score": -1.69,
+   "severity": "medium",
+   "direction": "decline",
+   "method": "yoy",
+   "baseline": {
+    "start": "2010-09-27",
+    "end": "2010-11-21"
+   },
+   "trading_days": {
+    "actual": 48,
+    "expected": 48
+   },
+   "trading_day_adjusted": true,
+   "partial_period_excluded": false,
+   "period_used": {
+    "start": "2011-09-26",
+    "end": "2011-11-20"
+   },
+   "checks": [
+    {
+     "method": "yoy",
+     "change_pct": -15.45,
+     "z_score": -1.69
+    },
+    {
+     "method": "stl",
+     "change_pct": -15.41,
+     "z_score": -13.75
+    }
+   ],
+   "definition": "net_revenue = sum(quantity*unit_price) over product lines, cancellations negative, unattributed rows included; expected scaled by trading days",
+   "data_through": "2011-12-09",
+   "normal_variation": {
+    "windows": 35,
+    "mean_yoy_pct": 1.13,
+    "sd_yoy_pct": 9.82
+   }
+  },
+  "summary": "net_revenue is 15.45% below expected (yoy, z = -1.69); severity medium."
+ },
+ {
+  "type": "step_started",
+  "step": 2,
+  "tool": "drill_down",
+  "title": "Finding where the change happened",
+  "input": {
+   "compare_to": "same_period_last_year",
+   "dimensions": [
+    "country",
+    "customer_type",
+    "rfm_tier",
+    "tenure"
+   ],
+   "period": {
+    "end": "2011-11-20",
+    "start": "2011-09-26"
+   },
+   "metric": "net_revenue"
+  }
+ },
+ {
+  "type": "step_finished",
+  "step": 2,
+  "tool": "drill_down",
+  "title": "Finding where the change happened",
+  "evidence_id": "E2",
+  "duration_ms": 0,
+  "status": "ok",
+  "result": {
+   "evidence_id": "E2",
+   "total_change": -348740.42,
+   "gross_decline": -441316.93,
+   "gross_decline_by_dimension": {
+    "country": -441316.93,
+    "customer_type": -566686.2,
+    "rfm_tier": -566686.2,
+    "tenure": -566686.2
+   },
+   "contributors": {
+    "country": [
+     {
+      "value": "United Kingdom",
+      "change": -395059.64,
+      "pct_change": -19.9,
+      "share_of_net_change": 1.1328,
+      "share_of_gross_decline": 0.8952,
+      "n_customers": 3219
+     },
+     {
+      "value": "EIRE",
+      "change": -24636.24,
+      "pct_change": -31.0,
+      "share_of_net_change": 0.0706,
+      "share_of_gross_decline": 0.0558,
+      "n_customers": 3
+     },
+     {
+      "value": "Switzerland",
+      "change": -4036.3,
+      "pct_change": -19.7,
+      "share_of_net_change": 0.0116,
+      "share_of_gross_decline": 0.0091,
+      "n_customers": 14
+     },
+     {
+      "value": "Greece",
+      "change": -3065.77,
+      "pct_change": -100.0,
+      "share_of_net_change": 0.0088,
+      "share_of_gross_decline": 0.0069,
+      "n_customers": 1
+     },
+     {
+      "value": "Sweden",
+      "change": -2344.19,
+      "pct_change": -23.0,
+      "share_of_net_change": 0.0067,
+      "share_of_gross_decline": 0.0053,
+      "n_customers": 11
+     },
+     {
+      "value": "(other)",
+      "change": 80401.72,
+      "pct_change": 50.4,
+      "share_of_net_change": -0.2305,
+      "share_of_gross_decline": 0.0276,
+      "n_customers": 285
+     }
+    ],
+    "customer_type": [
+     {
+      "value": "wholesale_like",
+      "change": -497594.85,
+      "pct_change": -34.0,
+      "share_of_net_change": 1.4268,
+      "share_of_gross_decline": 0.8781,
+      "n_customers": 1467
+     },
+     {
+      "value": "retail_like",
+      "change": -67354.8,
+      "pct_change": -18.2,
+      "share_of_net_change": 0.1931,
+      "share_of_gross_decline": 0.1189,
+      "n_customers": 1145
+     },
+     {
+      "value": "unclassified_new",
+      "change": -1736.55,
+      "pct_change": -1.4,
+      "share_of_net_change": 0.005,
+      "share_of_gross_decline": 0.0031,
+      "n_customers": 520
+     },
+     {
+      "value": "unattributed",
+      "change": 33798.84,
+      "pct_change": 11.3,
+      "share_of_net_change": -0.0969,
+      "share_of_gross_decline": 0.0,
+      "n_customers": 0
+     },
+     {
+      "value": "new_in_period",
+      "change": 184146.94,
+      "pct_change": 100.0,
+      "share_of_net_change": -0.528,
+      "share_of_gross_decline": 0.0,
+      "n_customers": 399
+     }
+    ],
+    "rfm_tier": [
+     {
+      "value": "high",
+      "change": -465984.87,
+      "pct_change": -31.6,
+      "share_of_net_change": 1.3362,
+      "share_of_gross_decline": 0.8223,
+      "n_customers": 1363
+     },
+     {
+      "value": "mid",
+      "change": -68483.57,
+      "pct_change": -20.1,
+      "share_of_net_change": 0.1964,
+      "share_of_gross_decline": 0.1208,
+      "n_customers": 1052
+     },
+     {
+      "value": "low",
+      "change": -32217.76,
+      "pct_change": -22.4,
+      "share_of_net_change": 0.0924,
+      "share_of_gross_decline": 0.0569,
+      "n_customers": 717
+     },
+     {
+      "value": "unattributed",
+      "change": 33798.84,
+      "pct_change": 11.3,
+      "share_of_net_change": -0.0969,
+      "share_of_gross_decline": 0.0,
+      "n_customers": 0
+     },
+     {
+      "value": "new_in_period",
+      "change": 184146.94,
+      "pct_change": 100.0,
+      "share_of_net_change": -0.528,
+      "share_of_gross_decline": 0.0,
+      "n_customers": 399
+     }
+    ],
+    "tenure": [
+     {
+      "value": "returning",
+      "change": -566686.2,
+      "pct_change": -28.9,
+      "share_of_net_change": 1.625,
+      "share_of_gross_decline": 1.0,
+      "n_customers": 3132
+     },
+     {
+      "value": "unattributed",
+      "change": 33798.84,
+      "pct_change": 11.3,
+      "share_of_net_change": -0.0969,
+      "share_of_gross_decline": 0.0,
+      "n_customers": 0
+     },
+     {
+      "value": "new",
+      "change": 184146.94,
+      "pct_change": 100.0,
+      "share_of_net_change": -0.528,
+      "share_of_gross_decline": 0.0,
+      "n_customers": 399
+     }
+    ]
+   },
+   "skipped_dimensions": [],
+   "period_used": {
+    "start": "2011-09-26",
+    "end": "2011-11-20"
+   },
+   "baseline": {
+    "start": "2010-09-27",
+    "end": "2010-11-21"
+   },
+   "partial_period_excluded": false,
+   "definition": "net_revenue = sum(quantity*unit_price) over product lines, cancellations negative, unattributed rows included; customer segments fixed as of period start",
+   "data_through": "2011-12-09"
+  },
+  "summary": "Total change \u00a3348,740; biggest country: United Kingdom (90% of the gross decline)."
+ },
+ {
+  "type": "step_started",
+  "step": 3,
+  "tool": "driver_decomposition",
+  "title": "Splitting the change into customers, frequency and basket size",
+  "input": {
+   "period": {
+    "end": "2011-11-20",
+    "start": "2011-09-26"
+   },
+   "compare_to": "same_period_last_year",
+   "metric": "net_revenue"
+  }
+ },
+ {
+  "type": "step_finished",
+  "step": 3,
+  "tool": "driver_decomposition",
+  "title": "Splitting the change into customers, frequency and basket size",
+  "evidence_id": "E3",
+  "duration_ms": 0,
+  "status": "ok",
+  "result": {
+   "evidence_id": "E3",
+   "total_change": -348740.42,
+   "effects": {
+    "active_customers": {
+     "change": -56263.98,
+     "share": 0.1613
+    },
+    "orders_per_customer": {
+     "change": -105243.42,
+     "share": 0.3018
+    },
+    "aov": {
+     "change": -221031.87,
+     "share": 0.6338
+    },
+    "unattributed": {
+     "change": 33798.84,
+     "share": -0.0969
+    }
+   },
+   "sum_check": -348740.42,
+   "levels": {
+    "baseline": {
+     "active_customers": 2321,
+     "orders": 4187,
+     "orders_per_customer": 1.804,
+     "aov": 467.83,
+     "attributed_revenue": 1958794.98,
+     "unattributed_revenue": 298843.8
+    },
+    "current": {
+     "active_customers": 2248,
+     "orders": 3820,
+     "orders_per_customer": 1.699,
+     "aov": 412.63,
+     "attributed_revenue": 1576255.72,
+     "unattributed_revenue": 332642.64
+    }
+   },
+   "period_used": {
+    "start": "2011-09-26",
+    "end": "2011-11-20"
+   },
+   "baseline": {
+    "start": "2010-09-27",
+    "end": "2010-11-21"
+   },
+   "partial_period_excluded": false,
+   "definition": "net_revenue = sum(quantity*unit_price) over product lines, cancellations negative, unattributed rows included; attributed revenue = customers x orders/customer x revenue/order (log-mean decomposition); unattributed reported separately",
+   "data_through": "2011-12-09"
+  },
+  "summary": "Largest effect: aov \u00a3221,032 (63% of the change)."
+ },
+ {
+  "type": "step_started",
+  "step": 4,
+  "tool": "customer_movement",
+  "title": "Finding which customers were retained, lost or new",
+  "input": {
+   "period": {
+    "end": "2011-11-20",
+    "start": "2011-09-26"
+   },
+   "metric": "net_revenue",
+   "compare_to": "same_period_last_year"
+  }
+ },
+ {
+  "type": "step_finished",
+  "step": 4,
+  "tool": "customer_movement",
+  "title": "Finding which customers were retained, lost or new",
+  "evidence_id": "E4",
+  "duration_ms": 0,
+  "status": "ok",
+  "result": {
+   "evidence_id": "E4",
+   "window_days": 70,
+   "total_change": -348740.42,
+   "retained": {
+    "customers": 1273,
+    "revenue_change": -122541.04,
+    "share_of_total_change": 0.3514
+   },
+   "lost": {
+    "customers": 1102,
+    "revenue_change": -887857.46,
+    "share_of_total_change": 2.5459
+   },
+   "new": {
+    "customers": 1156,
+    "revenue_change": 627859.24,
+    "share_of_total_change": -1.8004
+   },
+   "unattributed": {
+    "revenue_change": 33798.84,
+    "share_of_total_change": -0.0969
+   },
+   "top10_concentration": 0.1963,
+   "top3_concentration": 0.0997,
+   "concentrated_in_few_accounts": false,
+   "top_lost_accounts": [
+    {
+     "customer_id": 18102,
+     "revenue_change": -52288.07
+    },
+    {
+     "customer_id": 17450,
+     "revenue_change": -44068.38
+    },
+    {
+     "customer_id": 15838,
+     "revenue_change": -30511.98
+    },
+    {
+     "customer_id": 12931,
+     "revenue_change": -23097.5
+    },
+    {
+     "customer_id": 16684,
+     "revenue_change": -21492.55
+    },
+    {
+     "customer_id": 15061,
+     "revenue_change": -17668.06
+    },
+    {
+     "customer_id": 13093,
+     "revenue_change": -17359.38
+    },
+    {
+     "customer_id": 17511,
+     "revenue_change": -16601.26
+    },
+    {
+     "customer_id": 13694,
+     "revenue_change": -13558.94
+    },
+    {
+     "customer_id": 14088,
+     "revenue_change": -13316.14
+    }
+   ],
+   "lost_check_window": {
+    "start": "2011-09-26",
+    "end": "2011-12-04"
+   },
+   "period_used": {
+    "start": "2011-09-26",
+    "end": "2011-11-20"
+   },
+   "baseline": {
+    "start": "2010-09-27",
+    "end": "2010-11-21"
+   },
+   "partial_period_excluded": false,
+   "definition": "net_revenue = sum(quantity*unit_price) over product lines, cancellations negative, unattributed rows included; lost = active in baseline, none in the lost-check window; new = active now, not in baseline",
+   "data_through": "2011-12-09"
+  },
+  "summary": "1102 lost customers (\u00a3887,857), 1156 new (\u00a3627,859)."
+ },
+ {
+  "type": "step_started",
+  "step": 5,
+  "tool": "significance_test",
+  "title": "Testing whether the segment's change is statistically solid",
+  "input": {
+   "compare_to": "same_period_last_year",
+   "segment": {
+    "value": "wholesale_like",
+    "dimension": "customer_type"
+   },
+   "metric": "net_revenue",
+   "period": {
+    "end": "2011-11-20",
+    "start": "2011-09-26"
+   }
+  }
+ },
+ {
+  "type": "step_finished",
+  "step": 5,
+  "tool": "significance_test",
+  "title": "Testing whether the segment's change is statistically solid",
+  "evidence_id": "E5",
+  "duration_ms": 0,
+  "status": "ok",
+  "result": {
+   "evidence_id": "E5",
+   "method": "customer-level bootstrap, 2000 resamples",
+   "effect_size": -0.3397,
+   "ci_low": -0.4449,
+   "ci_high": -0.221,
+   "p_value": 0.0005,
+   "strength": "supporting",
+   "n_customers": 1467,
+   "effect_pct": -34.0,
+   "segment": {
+    "dimension": "customer_type",
+    "value": "wholesale_like"
+   },
+   "caveat": "Segment was chosen after looking at the data, so p-values are optimistic; rely on the interval and effect size. Customer-level bootstrap, 2000 resamples.",
+   "period_used": {
+    "start": "2011-09-26",
+    "end": "2011-11-20"
+   },
+   "baseline": {
+    "start": "2010-09-27",
+    "end": "2010-11-21"
+   },
+   "definition": "net_revenue = sum(quantity*unit_price) over product lines, cancellations negative, unattributed rows included; segment membership fixed as of period start",
+   "data_through": "2011-12-09"
+  },
+  "summary": "wholesale_like: effect -34.0%, 95% interval -44.5% to -22.1%; supporting."
+ },
+ {
+  "type": "step_started",
+  "step": 6,
+  "tool": "significance_test",
+  "title": "Testing whether the segment's change is statistically solid",
+  "input": {
+   "period": {
+    "start": "2011-09-26",
+    "end": "2011-11-20"
+   },
+   "segment": {
+    "value": "United Kingdom",
+    "dimension": "country"
+   },
+   "compare_to": "same_period_last_year",
+   "metric": "net_revenue"
+  }
+ },
+ {
+  "type": "step_finished",
+  "step": 6,
+  "tool": "significance_test",
+  "title": "Testing whether the segment's change is statistically solid",
+  "evidence_id": "E6",
+  "duration_ms": 0,
+  "status": "ok",
+  "result": {
+   "evidence_id": "E6",
+   "method": "customer-level bootstrap, 2000 resamples",
+   "effect_size": -0.2572,
+   "ci_low": -0.3471,
+   "ci_high": -0.1527,
+   "p_value": 0.0005,
+   "strength": "supporting",
+   "n_customers": 3219,
+   "effect_pct": -25.7,
+   "segment": {
+    "dimension": "country",
+    "value": "United Kingdom"
+   },
+   "caveat": "Segment was chosen after looking at the data, so p-values are optimistic; rely on the interval and effect size. Customer-level bootstrap, 2000 resamples.",
+   "period_used": {
+    "start": "2011-09-26",
+    "end": "2011-11-20"
+   },
+   "baseline": {
+    "start": "2010-09-27",
+    "end": "2010-11-21"
+   },
+   "definition": "net_revenue = sum(quantity*unit_price) over product lines, cancellations negative, unattributed rows included; segment membership fixed as of period start",
+   "data_through": "2011-12-09"
+  },
+  "summary": "United Kingdom: effect -25.7%, 95% interval -34.7% to -15.3%; supporting."
+ },
+ {
+  "type": "report",
+  "report": {
+   "hypotheses": [
+    "Changes in wholesale purchasing patterns or inventory management by key retail partners.",
+    "Increased competition or shifts in market demand affecting the UK wholesale segment.",
+    "Changes in pricing strategy or promotional activity that specifically impacted wholesale-like order values."
+   ],
+   "findings": [
+    {
+     "text": "Net revenue declined by 15% (about 348,740) between 2011-09-26 and 2011-11-20 compared to the same period last year.",
+     "evidence_ids": [
+      "E1"
+     ]
+    },
+    {
+     "text": "The decline was primarily driven by returning customers in the UK, particularly those classified as 'wholesale_like' and in the 'high' RFM tier. Wholesale-like customers saw a 34% revenue decrease.",
+     "evidence_ids": [
+      "E2",
+      "E5",
+      "E6"
+     ]
+    },
+    {
+     "evidence_ids": [
+      "E3"
+     ],
+     "text": "The revenue drop was largely due to a decrease in average order value (AOV), which accounted for 63% of the decline, followed by a reduction in orders per customer (30%)."
+    },
+    {
+     "evidence_ids": [
+      "E4"
+     ],
+     "text": "The revenue loss was driven by a combination of lost customers (who accounted for a significant revenue reduction) and lower spending from retained customers, rather than being concentrated in a few specific accounts."
+    }
+   ],
+   "data_gaps": [
+    "Product-level data to determine if specific categories or items are driving the lower AOV.",
+    "Marketing and promotional data to assess if changes in campaigns impacted wholesale-like customer behavior."
+   ],
+   "headline": "Net revenue fell by 15% between 2011-09-26 and 2011-11-20 compared to the same period last year, driven by lower spending from returning wholesale-like customers in the UK.",
+   "actions": [
+    {
+     "text": "Investigate the decline in average order value (AOV) among returning wholesale-like customers in the UK, as this is the primary driver of the revenue drop.",
+     "evidence_ids": [
+      "E2",
+      "E3",
+      "E4"
+     ]
+    },
+    {
+     "text": "Review the engagement strategy for high-value returning customers to mitigate the loss of revenue from this segment.",
+     "evidence_ids": [
+      "E4"
+     ]
+    }
+   ]
+  },
+  "confidence": {
+   "score": 85.9,
+   "band": "High",
+   "components": {
+    "coverage": 0.895,
+    "significance": 0.782,
+    "specificity": 0.805,
+    "robustness": 1.0
+   },
+   "flags": []
+  },
+  "validated": true,
+  "validation": {
+   "ok": true,
+   "unmatched": [],
+   "bad_citations": [],
+   "checked": 6,
+   "schema_errors": []
+  },
+  "model": "gemini-3.1-flash-lite"
+ },
+ {
+  "type": "run_finished",
+  "run_id": "r_20261028_120523",
+  "status": "ok",
+  "steps": 6,
+  "duration_ms": 0
+ }
+]

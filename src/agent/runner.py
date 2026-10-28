@@ -20,6 +20,7 @@ sys.path.insert(0, str(ROOT / "src" / "tools"))
 from common import ToolError  # noqa: E402
 
 CONTRACT = json.loads((ROOT / "contract" / "schemas.json").read_text(encoding="utf-8"))
+ERROR_CODES = set(CONTRACT["error"]["properties"]["error"]["properties"]["code"]["enum"])
 MODULES = ["detect_anomaly", "drill_down", "driver_decomposition", "customer_movement",
            "significance_test", "check_external_factors", "forecast_scenario"]
 TOOL_FUNCS = {}
@@ -28,6 +29,53 @@ for _n in MODULES:
         TOOL_FUNCS[_n] = getattr(importlib.import_module(_n), _n)
     except Exception as _e:  # noqa: BLE001  (a missing tool must never break the demo)
         print(f"[runner] tool '{_n}' not available: {type(_e).__name__}: {_e}", file=sys.stderr)
+
+def _resolved(args):
+    """Shared connection + the same period resolution every core tool uses (partial week clamped, yoy = -364 d)."""
+    from common import d, get_con, prepare_period
+    con = get_con()
+    p = prepare_period(con, args["period"], args.get("compare_to", "same_period_last_year"))
+    return con, {"start": d(p["s"]), "end": d(p["e"])}, {"start": d(p["bs"]), "end": d(p["be"])}, d(p["dt"])
+
+
+def _external(args, _raw=TOOL_FUNCS.get("check_external_factors")):
+    """Contract request -> Mugdha's tool (explicit ranges + DB connection) -> contract fields added alongside hers."""
+    con, cur, base, dt = _resolved(args)
+    r = _raw({"period": cur, "compare_to": base, "filters": args.get("filters") or []}, con=con)
+    if "error" in r:
+        return r
+    t1 = r.get("tier1") or {}
+    td, av, pr = t1.get("trading_days") or {}, t1.get("availability") or {}, t1.get("price") or {}
+    tested = r.get("tier2_tested") or []
+    r.update(trading_days={"actual": td.get("current"), "expected": td.get("base"), "delta": td.get("delta")},
+             price_index_change_pct=pr.get("price_index_change_pct"),
+             products_dropped=av.get("products_dropped"), products_launched=av.get("products_launched"),
+             holiday_flags=[str(x.get("name") or x.get("series")) for x in tested
+                            if "holiday" in str(x.get("name") or x.get("series", "")).lower()],
+             tested_series=[{"name": str(x.get("name") or x.get("series")), "effect": x.get("effect", 0.0),
+                             "strength": x.get("strength", "none")} for x in tested],
+             no_data=[f"{x['series']}: {x['reason']}" if isinstance(x, dict) else str(x)
+                      for x in r.get("no_data") or []],
+             data_through=dt)
+    return r
+
+
+def _forecast(args, _raw=TOOL_FUNCS.get("forecast_scenario")):
+    con, cur, _, dt = _resolved(args)
+    seg = args.get("segment")
+    r = _raw({"horizon_weeks": args.get("horizon_weeks", 8), "filters": args.get("filters") or [],
+              "recover_segment": [seg] if seg else [], "as_of": cur["start"], "data_through": dt}, con=con)
+    if "error" in r:
+        return r
+    pts = lambda xs: [{"week_start": p["period_start"], "value": p["value"]} for p in xs or []]  # noqa: E731
+    r.update(baseline=pts(r.get("baseline")), what_if=pts(r.get("what_if")), data_through=dt)
+    return r
+
+
+if "check_external_factors" in TOOL_FUNCS:
+    TOOL_FUNCS["check_external_factors"] = _external
+if "forecast_scenario" in TOOL_FUNCS:
+    TOOL_FUNCS["forecast_scenario"] = _forecast
 
 DESCRIPTIONS = {
     "detect_anomaly": "Check whether a metric really changed in a period versus the same period last year "
@@ -69,6 +117,10 @@ class Runner:
             return ToolError("BAD_PERIOD", f"missing required argument: {e}").payload(), None
         except Exception as e:  # noqa: BLE001
             return ToolError("INTERNAL", f"{type(e).__name__}: {str(e)[:200]}").payload(), None
+        if isinstance(result, dict) and "error" in result:          # tools that RETURN errors instead of raising
+            err = result["error"] if isinstance(result["error"], dict) else {"message": str(result["error"])}
+            code = err.get("code") if err.get("code") in ERROR_CODES else "NO_DATA"
+            return {"error": {"code": code, "message": f"{err.get('code', '')}: {err.get('message', '')}"}}, None
         eid = f"E{len(self.evidence) + 1}"
         payload = {"evidence_id": eid, **result}
         errs = [e.message for e in Draft7Validator(CONTRACT["tools"][name]["response"]).iter_errors(payload)]
