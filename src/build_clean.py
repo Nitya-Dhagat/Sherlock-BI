@@ -56,11 +56,17 @@ def esc(path):
 
 
 # =====================================================================================
-def main():
-    if not RAW_PARQUET.exists():
-        raise FileNotFoundError(f"{RAW_PARQUET} not found. Run src/build_data.py first.")
+def main(raw_parquet=RAW_PARQUET, out_dir=CLEAN_DIR, db_name="whybot.duckdb"):
+    """Build every clean table. Defaults build the real data; make_scenario.py passes other paths."""
+    raw_parquet, out_dir = Path(raw_parquet), Path(out_dir)
+    out_dir.mkdir(parents=True, exist_ok=True)
+    clean_parquet = out_dir / "transactions_clean.parquet"
+    lines_parquet = out_dir / "product_lines.parquet"
+    report_path = out_dir / "clean_report.json"
+    if not raw_parquet.exists():
+        raise FileNotFoundError(f"{raw_parquet} not found. Run src/build_data.py first.")
 
-    con = duckdb.connect(str(DUCKDB_PATH))
+    con = duckdb.connect(str(out_dir / db_name))
     report = {}
 
     # ---- 1. stage: normalise types, give every row an id --------------------------------
@@ -78,7 +84,7 @@ def main():
             trim(country) AS country,
             source_sheet
         FROM read_parquet('__RAW__')
-    """, RAW=esc(RAW_PARQUET)))
+    """, RAW=esc(raw_parquet)))
     report["raw_rows"] = con.execute("SELECT count(*) FROM stage").fetchone()[0]
 
     # ---- 2. exact duplicates (keep first; the Dec-2010 sheet overlap lives here) --------
@@ -150,8 +156,8 @@ def main():
         WHERE is_product_line AND NOT is_bulk_reversal
     """)
 
-    con.execute(sql("COPY transactions_clean TO '__P__' (FORMAT PARQUET)", P=esc(CLEAN_PARQUET)))
-    con.execute(sql("COPY product_lines TO '__P__' (FORMAT PARQUET)", P=esc(LINES_PARQUET)))
+    con.execute(sql("COPY transactions_clean TO '__P__' (FORMAT PARQUET)", P=esc(clean_parquet)))
+    con.execute(sql("COPY product_lines TO '__P__' (FORMAT PARQUET)", P=esc(lines_parquet)))
 
     # cleaning report numbers
     r = con.execute("""
@@ -225,7 +231,7 @@ def main():
         con.execute(f"CREATE OR REPLACE TABLE {name} AS "
                     f"SELECT CAST({key} AS DATE) AS {key}, * EXCLUDE ({key}) FROM frame_tmp")
         con.unregister("frame_tmp")
-        frame.to_csv(CLEAN_DIR / f"{name}.csv", index=False)
+        frame.to_csv(out_dir / f"{name}.csv", index=False)
 
     # ---- 8. customer tables ------------------------------------------------------------------
     con.execute("""
@@ -318,8 +324,8 @@ def main():
     print(demo["rfm_tier"].value_counts().to_string())
     print(demo.head(5).to_string())
 
-    REPORT_PATH.write_text(json.dumps(report, indent=2, default=str), encoding="utf-8")
-    print(f"\nSaved {REPORT_PATH}")
+    report_path.write_text(json.dumps(report, indent=2, default=str), encoding="utf-8")
+    print(f"\nSaved {report_path}")
     con.close()
     if not all(checks.values()):
         raise SystemExit("A reconciliation check FAILED. Fix before sharing the data.")
@@ -389,4 +395,4 @@ def customer_features_asof(con, as_of):
 
 
 if __name__ == "__main__":
-    main() 
+    main()

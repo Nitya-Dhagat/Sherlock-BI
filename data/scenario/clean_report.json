@@ -1,0 +1,51 @@
+{
+  "raw_rows": 1060841,
+  "duplicate_rows_removed": 34236,
+  "duplicate_revenue_removed": 431465.0899999979,
+  "rows_after_dedupe": 1026605,
+  "non_product_rows_excluded": 11896,
+  "non_product_revenue_excluded": -69860.35199999991,
+  "bulk_reversal_rows_excluded": 4,
+  "bulk_reversal_lines": [
+    {
+      "invoice": "541431",
+      "stock_code": "23166",
+      "quantity": "74215",
+      "customer_id": "12346"
+    },
+    {
+      "invoice": "C541433",
+      "stock_code": "23166",
+      "quantity": "-74215",
+      "customer_id": "12346"
+    },
+    {
+      "invoice": "581483",
+      "stock_code": "23843",
+      "quantity": "80995",
+      "customer_id": "16446"
+    },
+    {
+      "invoice": "C581484",
+      "stock_code": "23843",
+      "quantity": "-80995",
+      "customer_id": "16446"
+    }
+  ],
+  "net_revenue": 18512223.269997723,
+  "gross_revenue": 18973645.239997916,
+  "unattributed_revenue": 2567651.6400000653,
+  "unattributed_share": 0.13870033882755678,
+  "final_product_line_rows": 1014705,
+  "data_start": "2009-12-01",
+  "data_end": "2011-12-09",
+  "checks": {
+    "raw = dedupe + duplicates": true,
+    "daily net sums to total": true,
+    "weekly net sums to total": true,
+    "daily gross sums to total": true,
+    "weekly unattributed sums to total": true,
+    "attributed + unattributed = net": true,
+    "weekly calendar is gap-free": true
+  }
+}

@@ -1,0 +1,31 @@
+# SYNTHETIC SCENARIO. The real data in data/clean is untouched. State this openly in the pitch.
+synthetic: true
+created: 2026-10-27
+database: data/scenario/whybot_scenario.duckdb   # set WHYBOT_DB to this path for the demo
+change:
+  mode: lost   # all invoices on/after the cutoff removed
+  cutoff: 2011-09-26
+  group: UK, wholesale-like accounts (avg units/order >= 150, >= 3 orders in prior 365 days), active in last year's matching window; top 30 by that window's revenue
+  accounts: 30
+  customer_ids: [18102, 17450, 15838, 12931, 16684, 15061, 13093, 17511, 17389, 13694, 14088, 16754, 13777, 17949, 14298, 13798, 13089, 13081, 15523, 15769, 15311, 16705, 16191, 16553, 16422, 15281, 16013, 17381, 13881, 17841]
+  rows_removed: 6530
+demo:
+  period: {start: 2011-09-26, end: 2011-11-20}
+  compare_to: same_period_last_year
+  question: "Why did revenue drop between 2011-09-26 and 2011-11-20 compared with last year?"
+  backup_no_anomaly: "Why did revenue drop in <a quiet window you verify in weekly_metrics.csv>?"
+  backup_unanswerable: "Did a competitor take our customers?"
+measured:
+  last_year_window_net_revenue: 2257639
+  real_this_period_net_revenue: 2207759
+  scenario_this_period_net_revenue: 1908898
+  scenario_yoy_pct: -15.4
+  revenue_removed_by_plant: -298860
+expected_answer:   # written BEFORE the agent runs
+  headline: Net revenue fell year over year because a group of UK wholesale-like accounts stopped ordering.
+  segment: customer_type = wholesale_like (UK)
+  rough_share_of_decline: 0.86
+  driver: fewer active customers (lost accounts); AOV roughly unchanged
+  customer_movement: lost customers should carry most of the decline
+  not_expected: seasonality, trading days or price changes as the main cause
+  confidence: should be Medium or High
