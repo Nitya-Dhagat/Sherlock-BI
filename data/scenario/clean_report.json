@@ -1,10 +1,10 @@
 {
   "raw_rows": 1060841,
   "duplicate_rows_removed": 34236,
-  "duplicate_revenue_removed": 431465.0899999979,
+  "duplicate_revenue_removed": 431465.08999999904,
   "rows_after_dedupe": 1026605,
   "non_product_rows_excluded": 11896,
-  "non_product_revenue_excluded": -69860.35199999991,
+  "non_product_revenue_excluded": -69860.3519999998,
   "bulk_reversal_rows_excluded": 4,
   "bulk_reversal_lines": [
     {
@@ -32,10 +32,10 @@
       "customer_id": "16446"
     }
   ],
-  "net_revenue": 18512223.269997723,
-  "gross_revenue": 18973645.239997916,
-  "unattributed_revenue": 2567651.6400000653,
-  "unattributed_share": 0.13870033882755678,
+  "net_revenue": 18512223.269998007,
+  "gross_revenue": 18973645.239998043,
+  "unattributed_revenue": 2567651.6400000686,
+  "unattributed_share": 0.13870033882755484,
   "final_product_line_rows": 1014705,
   "data_start": "2009-12-01",
   "data_end": "2011-12-09",

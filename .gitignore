@@ -1,5 +1,5 @@
 venvdata/clean/whybot.duckdb
 data/clean/transactions_clean.parquet
 venv
-
-
+data/scenario/whybot_scenario.duckdb
+data/clean/whybot.duckdb
