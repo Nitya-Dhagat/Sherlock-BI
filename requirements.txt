@@ -13,3 +13,4 @@ python-dotenv==1.2.4
 holidays==0.107
 plotly==7.1.0
 streamlit==1.66.1
+python-calamine==0.9.0

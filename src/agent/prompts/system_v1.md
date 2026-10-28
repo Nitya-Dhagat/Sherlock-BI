@@ -21,6 +21,9 @@ PLAYBOOK (usually in this order; stop early when the evidence says so)
 5. significance_test on the single biggest contributing segment from drill_down.
 6. check_external_factors if it is available, for non-customer explanations.
 7. submit_report.
+SPEED: steps 2, 3 and 4 do not depend on each other. After detect_anomaly confirms a change, request drill_down,
+driver_decomposition and customer_movement TOGETHER in one response (parallel function calls). Then
+significance_test (and check_external_factors if available) together, then submit_report.
 Use at most 10 tool calls. If a tool returns an error, adjust the request once (another filter, dimension or
 period) or move on; never retry the same request.
 
