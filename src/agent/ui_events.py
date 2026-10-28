@@ -20,7 +20,7 @@ import time
 from datetime import datetime
 
 TITLES = {
-    "detect_anomaly": "Checking whether the drop is real",
+    "detect_anomaly": "Checking whether the change is real",
     "drill_down": "Finding where the change happened",
     "driver_decomposition": "Splitting the change into customers, frequency and basket size",
     "customer_movement": "Finding which customers were retained, lost or new",
@@ -43,12 +43,19 @@ def summarise(tool, r):
         if tool == "drill_down":
             dim, rows = next(((k, v) for k, v in r["contributors"].items() if k != "tenure"),
                              next(iter(r["contributors"].items())))
-            top = rows[0]
-            return (f"Total change {_money(r['total_change'])}; biggest {dim}: {top['value']} "
-                    f"({top['share_of_gross_decline']:.0%} of the gross decline).")
+            top = next((x for x in rows if x["value"] != "(other)"), rows[0])   # rows are sorted by the net's sign
+            sign = "-" if r["total_change"] < 0 else "+"
+            share = (f" ({top['share_of_gross_decline']:.0%} of the gross decline)"
+                     if top["change"] < 0 and top["share_of_gross_decline"] else "")
+            return (f"Net change {sign}{_money(r['total_change'])}; biggest {dim}: {top['value']} "
+                    f"{'-' if top['change'] < 0 else '+'}{_money(top['change'])}{share}.")
         if tool == "driver_decomposition":
             name, eff = max(r["effects"].items(), key=lambda kv: abs(kv[1]["change"]))
-            return f"Largest effect: {name.replace('_', ' ')} {_money(eff['change'])} ({eff['share']:.0%} of the change)."
+            gross = sum(abs(v["change"]) for v in r["effects"].values())
+            share = (f" ({eff['share']:.0%} of the change)" if abs(r["total_change"]) >= 0.1 * gross
+                     else " (the effects largely offset each other)")
+            return (f"Largest effect: {name.replace('_', ' ')} "
+                    f"{'-' if eff['change'] < 0 else '+'}{_money(eff['change'])}{share}.")
         if tool == "customer_movement":
             return (f"{r['lost']['customers']} lost customers ({_money(r['lost']['revenue_change'])}), "
                     f"{r['new']['customers']} new ({_money(r['new']['revenue_change'])}).")

@@ -158,6 +158,21 @@ def norm_anomaly(r: dict) -> dict:
     }
 
 
+MATERIAL_SHARE = 0.10   # shares of the net change are shown only if |net| >= 10% of the parts' total movement
+
+
+def share_meaningful(total, changes) -> bool:
+    """False when the net change is tiny next to its parts (offsetting moves): % of net would explode."""
+    gross = sum(abs(c) for c in changes if c is not None)
+    return bool(total) and gross > 0 and abs(total) >= MATERIAL_SHARE * gross
+
+
+def top_contributor(items, total):
+    """Biggest real value in the direction of the net change; the '(other)' bucket is never 'top'."""
+    real = [r for r in items if str(r["value"]) != "(other)"] or items
+    return max(real, key=lambda r: r["change"]) if (total or 0) > 0 else min(real, key=lambda r: r["change"])
+
+
 def norm_drill(r: dict) -> dict:
     """
     Contract: total_change, contributors {dimension: [{value, change, pct_change,
@@ -185,9 +200,12 @@ def norm_drill(r: dict) -> dict:
         cleaned = [c for c in cleaned if c["change"] is not None]
         if cleaned:
             out[str(dim)] = cleaned
+    total = as_float(first(r, "total_change", "net_change", "change"))
+    first_rows = next(iter(out.values()), [])
     return {
-        "total_change": as_float(first(r, "total_change", "net_change", "change")),
+        "total_change": total,
         "contributors": out,
+        "share_meaningful": share_meaningful(total, [c["change"] for c in first_rows]),
         "dimensions": list(out.keys()),
     }
 
@@ -237,6 +255,7 @@ def norm_drivers(r: dict) -> dict:
         "method": first(r, "method"),
         "sum_check": as_float(first(r, "sum_check")),
         "effects_sum": round(sum(e["change"] for e in effects), 2) if effects else None,
+        "share_meaningful": share_meaningful(total, [e["change"] for e in effects]),
     }
 
 
@@ -564,14 +583,19 @@ def step_rows(tool: str, n: dict) -> list[tuple[str, str]]:
         if tool == "drill_down":
             rows = [("Total change", money(n["total_change"]))]
             for dim, items in list(n["contributors"].items())[:3]:
-                top = min(items, key=lambda r: r["change"])
-                rows.append((f"Top {pretty_label(dim)}",
-                             f"{top['value']} · {money(top['change'])}"
-                             f" · {share_pct(top['share_net'])} of net"))
+                top = top_contributor(items, n["total_change"])
+                if n.get("share_meaningful") and top["share_net"] is not None:
+                    share = f" · {share_pct(top['share_net'])} of net"
+                elif top["change"] < 0 and top["share_gross"]:
+                    share = f" · {share_pct(top['share_gross'])} of gross decline"
+                else:
+                    share = ""
+                rows.append((f"Top {pretty_label(dim)}", f"{top['value']} · {money(top['change'])}{share}"))
             return rows
         if tool == "driver_decomposition":
+            show = n.get("share_meaningful", True)
             rows = [(pretty_label(e["name"]),
-                     f"{money(e['change'])} · {share_pct(e['share'])}")
+                     f"{money(e['change'])}" + (f" · {share_pct(e['share'])}" if show else ""))
                     for e in n["effects"]]
             if n["total_change"] is not None:
                 rows.append(("Total", money(n["total_change"])))

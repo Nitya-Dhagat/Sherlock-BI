@@ -156,7 +156,7 @@ def contributor_bars(n: dict, dimension: str, top_k: int = 6):
     text = []
     for r in rows:
         t = money(r["change"])
-        if r["share_net"] is not None:
+        if r["share_net"] is not None and n.get("share_meaningful", True):
             t += f"   {share_pct(r['share_net'])} of net change"
         text.append(t)
     fig = go.Figure(go.Bar(
@@ -177,7 +177,7 @@ def driver_bars(n: dict):
     if not n or not n["effects"]:
         return _empty("How did it change?", "waiting for driver_decomposition")
     eff = n["effects"]
-    has_share = all(e["share"] is not None for e in eff)
+    has_share = all(e["share"] is not None for e in eff) and n.get("share_meaningful", True)
     y = [(e["share"] * 100 if has_share else e["change"]) for e in eff]
     fig = go.Figure(go.Bar(
         x=[e["name"] for e in eff], y=y,
