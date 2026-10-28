@@ -112,6 +112,11 @@ CSS = """
            color:#94A3B8; font-weight:600; margin:1.1rem 0 .45rem 0;}
   div[data-testid="stMetricValue"] {font-size:2.3rem;}
   .stTabs [data-baseweb="tab"] {font-size:1rem; padding:.5rem .9rem;}
+  .wb-loader {display:flex; align-items:center; gap:.7rem; padding:.7rem 1rem; margin:.2rem 0 1rem 0;
+              border:1px solid #E7E9EE; border-radius:10px; background:#F8FAFC; color:#334155;}
+  .wb-spin {width:18px; height:18px; border:3px solid #CBD5E1; border-top-color:#2563EB;
+            border-radius:50%; animation:wb-rot .8s linear infinite;}
+  @keyframes wb-rot {to {transform:rotate(360deg);}}
 </style>
 """
 st.markdown(CSS, unsafe_allow_html=True)
@@ -238,8 +243,11 @@ def render_step(ev, box):
         return
 
     if t == "agent_message":
-        box.markdown(f"<div class='wb-step wb-step-msg'>{ev.get('text','')}</div>",
-                     unsafe_allow_html=True)
+        # collapsed like a chat 'thinking' block: the trace stays scannable, reasoning is one click away
+        text = ev.get("text", "")
+        preview = text if len(text) <= 70 else text[:70].rsplit(" ", 1)[0] + "…"
+        with box.expander(f"💭 Thinking — {preview}", expanded=False):
+            st.markdown(text)
         return
 
     if t != "step_finished":
@@ -373,19 +381,19 @@ def render_report():
         st.markdown(f"<div class='wb-headline'>{rep['headline']}</div>",
                     unsafe_allow_html=True)
 
+        if rep["actions"]:
+            st.markdown("<div class='wb-sec'>Recommended action</div>",
+                        unsafe_allow_html=True)
+            for a in rep["actions"]:
+                st.markdown(f"<div class='wb-finding'>• {a}</div>",
+                            unsafe_allow_html=True)
+
         if rep["findings"]:
             st.markdown("<div class='wb-sec'>Findings</div>", unsafe_allow_html=True)
             for f in rep["findings"]:
                 eids = "".join(f"<span class='wb-eid'>{e}</span>"
                                for e in f["evidence_ids"])
                 st.markdown(f"<div class='wb-finding'>• {f['text']}{eids}</div>",
-                            unsafe_allow_html=True)
-
-        if rep["actions"]:
-            st.markdown("<div class='wb-sec'>Recommended action</div>",
-                        unsafe_allow_html=True)
-            for a in rep["actions"]:
-                st.markdown(f"<div class='wb-finding'>• {a}</div>",
                             unsafe_allow_html=True)
 
         if rep["hypotheses"]:
@@ -468,6 +476,10 @@ def render_answer_banner():
         f"<div class='wb-headline' style='margin:0;'>{rep['headline']}</div>"
         f"<div style='flex:0 0 auto;'>{badge}</div></div>",
         unsafe_allow_html=True)
+    if rep["actions"]:                       # second thing the reader sees: what to do about it
+        st.markdown("<div class='wb-sec'>Recommended action</div>"
+                    + "".join(f"<div class='wb-finding'>• {a}</div>" for a in rep["actions"]),
+                    unsafe_allow_html=True)
 
 
 def render_status_strip():
@@ -533,6 +545,10 @@ question = qcol.text_input(
     "Question", value=default_q, label_visibility="collapsed",
     placeholder="Why did revenue drop?", key=f"q_{fixture_pick}_{mode}")
 run = bcol.button("Investigate", type="primary", use_container_width=True)
+if run:
+    reset_run()               # flush the old answer, banner and trace BEFORE anything below is drawn
+    st.session_state.source_label = mode
+loader = st.empty()
 
 render_status_strip()
 render_answer_banner()
@@ -551,8 +567,6 @@ if st.session_state.run_error and not run:
     st.error(st.session_state.run_error)
 
 if run:
-    reset_run()
-    st.session_state.source_label = mode
     if mode == "Fixtures":
         source = iter(events_from_fixtures(fixture_pick))
     elif mode == "Replay cached":
@@ -560,6 +574,10 @@ if run:
     else:
         source = events_live(question)      # a generator: import errors surface in the loop below
 
+    loader.markdown("<div class='wb-loader'><span class='wb-spin'></span>"
+                    "<span>WhyBot is investigating… the steps appear below as they finish"
+                    + (" (about 25 s)" if mode == "Live agent" else "") + "</span></div>",
+                    unsafe_allow_html=True)
     collected = []
     try:
         for ev in source:
@@ -577,6 +595,7 @@ if run:
         # kept in session state: st.rerun() below would otherwise wipe an st.error immediately
         st.session_state.run_error = (f"The run stopped: {type(e).__name__}: {e}. "
                                       "Switch the sidebar to Fixtures or Replay cached.")
+    loader.empty()
     if not st.session_state.run_error:
         fin = next((e for e in collected if e.get("type") == "run_finished"), {})
         if fin.get("status") == "error":
