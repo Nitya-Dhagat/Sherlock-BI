@@ -15,12 +15,12 @@ dependency order, then the playbook's cut order (Tier-2 external series → fore
 | Item | Expected behaviour | Files | Tests | Done when | Status |
 |---|---|---|---|---|---|
 | 2.1 Dependency manifest | `pip install -r requirements.txt` reproduces the env | `requirements.txt` | Full test run | done | **done** |
-| 2.2 `.env.example`, model from env | `ANTHROPIC_API_KEY`, `WHYBOT_MODEL` | `.env.example` | — | File present, `.env` ignored | open (with 3.1) |
+| 2.2 `.env.example`, model from env | `ANTHROPIC_API_KEY`, `WHYBOT_MODEL` | `.env.example` | — | File present, `.env` ignored | **done** |
 
 ## 3. Missing core functionality
 | Item | Expected behaviour | Files | Tests | Done when | Status |
 |---|---|---|---|---|---|
-| 3.1 Agent loop (R15) | `run_investigation(question)` generator: Claude tool use over `Runner.tool_schemas()`, at most ~12 steps, stops on `submit_report`. Report validated with `check_report`; one retry on mismatch. Confidence attached by code | `src/agent/loop.py`, `src/agent/prompts/` | Fake-client unit tests; live run on the scenario question | Scenario report names wholesale_like / lost accounts and passes the validator | **blocked for live verification** (no SDK or key); code can start |
+| 3.1 Agent loop (R15) | `run_investigation(question)` generator: Claude tool use over `Runner.tool_schemas()`, at most ~12 steps, stops on `submit_report`. Report validated with `check_report`; one retry on mismatch. Confidence attached by code | `src/agent/loop.py`, `src/agent/prompts/` | Fake-client unit tests; live run on the scenario question | Scenario report names wholesale_like / lost accounts and passes the validator | **done** (Gemini; live-verified 2026-10-28) |
 | 3.2 check_external_factors Tier 1 (R9) | trading-day delta, price-index change, products dropped/launched, UK holiday flags, `no_data` list | `src/tools/check_external_factors.py` | Contract + reconciliation tests | Validates against contract; ~2 s | open (Mugdha) |
 | 3.3 Cache / replay (R17) | Investigation stored, keyed by a hash of the question and tool inputs; replayed offline | `cache/`, `src/agent/loop.py` | Replay test | Demo replays with no network | open |
 

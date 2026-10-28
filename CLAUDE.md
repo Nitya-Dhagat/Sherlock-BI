@@ -16,7 +16,14 @@ Audit and requirements matrix: `docs/PROJECT_AUDIT.md`. Roadmap: `docs/IMPLEMENT
 - `src/agent/runner.py` — `Runner.call(name, args)`: evidence ids E1…, contract validation, never raises; `tool_schemas()` for Claude
 - `src/agent/confidence.py` — `compute_confidence(evidence)` (0.35C + 0.30S + 0.20P + 0.15R; bands ≥75 High, 50–74 Medium)
 - `src/agent/validator.py` — `check_report(report, evidence)` (numbers must match evidence; findings must cite valid ids)
-- **Not yet built:** agent loop (`loop.py` / `run_investigation`), `check_external_factors`, `forecast_scenario`, category classification, Streamlit UI, cache/replay, evaluation set.
+- `src/agent/loop.py` — `run_investigation(question, client=None, runner=None)`: a generator of JSON trace events
+  (`start`, `model_text`, `tool_call`, `tool_result`, `validation`, `report`, `error`) for the UI. The model ends by
+  calling `submit_report`, which is checked against the contract and by the validator, with ONE retry on a mismatch.
+  Confidence is attached by code. `report.validated` is False if the retry also fails.
+- `src/agent/llm.py` — provider adapter (`make_client()`, `client.start(system, tools).send(...) -> Turn`). Gemini is
+  implemented, with a model fallback chain. Add a provider by registering a class in `PROVIDERS`.
+- `src/agent/prompts/system_v1.md` — versioned system prompt (the playbook order and the reporting rules)
+- **Not yet built:** `check_external_factors`, `forecast_scenario`, category classification, cache/replay, evaluation set. The UI is being built by a teammate.
 
 ## Setup and run (Windows, Python 3.12.7 venv)
 ```
@@ -25,8 +32,11 @@ python src/build_data.py ; python src/build_clean.py      # ~1 min; DB files are
 python src/make_scenario.py                                 # demo DB
 $env:WHYBOT_DB = "data/scenario/whybot_scenario.duckdb"     # tools read this (default data/clean/whybot.duckdb)
 python src/agent/runner.py                                  # smoke test: all tools + confidence
-python -m pytest tests -q                                   # DB tests skip if WHYBOT_DB is missing
+python -m pytest tests -q                                   # DB tests skip if WHYBOT_DB is missing; loop tests use a fake LLM
+copy .env.example .env  (set GEMINI_API_KEY)                # .env is git-ignored
+python src/agent/loop.py "Why did revenue drop between 2011-09-26 and 2011-11-20 compared with last year?" --save run.json
 ```
+LLM env vars: `WHYBOT_PROVIDER` (gemini), `WHYBOT_MODEL` (default gemini-3.5-flash), `WHYBOT_FALLBACK_MODELS`.
 Run the tests against both DBs. The scenario-only tests check that the plant is recovered.
 
 ## Business rules (do not change silently)
@@ -50,7 +60,10 @@ Compact tool outputs (top-k, rounded); every result carries `definition` and `da
 method and the run command. Tests live in `tests/` and use `jsonschema` against the contract.
 
 ## Known limitations / open questions
-- No Anthropic SDK or API key is configured on this machine, so the agent loop can't be verified live
+- Gemini availability varies: on 2026-10-28, 2.5-flash returned 404 for this key, 3.8-flash returned 503, and
+  3.5-flash hit 429 under repeated runs. The fallback chain covers this; for the demo, cache a run with `--save`.
+- On the scenario the drivers show an AOV *mix* effect (−63%), not fewer customers. `data/scenario.yaml`'s expected
+  "driver" line says the opposite and should be corrected by its owner.
 - The STL z-score in detect_anomaly looks overconfident (−13.75 vs yoy −1.69 on the demo window) and inflates robustness
 - The validator flags prose dates and week numbers, so the prompt must require ISO dates
 - Whether the Streamlit UI exists outside this repo is unknown
