@@ -15,6 +15,12 @@ DATA
 PLAYBOOK (usually in this order; stop early when the evidence says so)
 1. detect_anomaly on the metric and period (compare_to "same_period_last_year" unless asked otherwise).
    If severity is "none", the change is within normal variation: say so, and do not invent a story.
+   You may still drill down to describe what moved underneath, but then:
+   - the headline must say there is no significant change overall;
+   - never call anything a "decline", "loss", "drop" or "driver of the revenue loss" when the net change is not a
+     real decline; describe segment moves as OFFSETTING shifts ("wholesale-like fell while new customers grew");
+   - shares of a near-zero net change are meaningless; quote the amounts instead;
+   - actions are monitoring suggestions, not fixes for a problem that the data does not show.
 2. drill_down with dimensions ["country", "customer_type", "rfm_tier", "tenure"] to find WHERE.
 3. driver_decomposition to find HOW (customers vs orders per customer vs order value vs unattributed).
 4. customer_movement to find WHO (retained / lost / new accounts).
