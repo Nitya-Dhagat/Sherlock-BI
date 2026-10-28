@@ -1,0 +1,13 @@
+{
+  "evidence_id": "E5",
+  "definition": "net_revenue = sum(quantity*unit_price) over product lines; cancellations negative; unattributed rows included",
+  "data_through": "2011-12-09",
+  "method": "customer-level bootstrap, 2000 resamples",
+  "effect_size": -0.152,
+  "ci_low": -0.231,
+  "ci_high": -0.074,
+  "p_value": 0.003,
+  "strength": "supporting",
+  "n_customers": 640,
+  "caveat": "Segment chosen after viewing the data; p-values are optimistic. Prefer the interval."
+}

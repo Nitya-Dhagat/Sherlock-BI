@@ -1,0 +1,25 @@
+{
+  "evidence_id": "E3",
+  "definition": "net_revenue = sum(quantity*unit_price) over product lines; cancellations negative; unattributed rows included",
+  "data_through": "2011-12-09",
+  "total_change": -128860.2,
+  "sum_check": -128860.2,
+  "effects": {
+    "active_customers": {
+      "change": -88500.0,
+      "share": 0.69
+    },
+    "orders_per_customer": {
+      "change": -21000.0,
+      "share": 0.16
+    },
+    "aov": {
+      "change": -9360.2,
+      "share": 0.07
+    },
+    "unattributed": {
+      "change": -10000.0,
+      "share": 0.08
+    }
+  }
+}

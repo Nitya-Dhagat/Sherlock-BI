@@ -1,0 +1,27 @@
+{
+  "evidence_id": "E6",
+  "definition": "net_revenue = sum(quantity*unit_price) over product lines; cancellations negative; unattributed rows included",
+  "data_through": "2011-12-09",
+  "trading_days": {
+    "actual": 38,
+    "expected": 40,
+    "delta": -2
+  },
+  "price_index_change_pct": 1.8,
+  "products_dropped": 34,
+  "products_launched": 21,
+  "holiday_flags": [
+    "UK summer bank holiday not in window"
+  ],
+  "tested_series": [
+    {
+      "name": "GBP/EUR weekly change vs non-UK revenue",
+      "effect": 0.04,
+      "strength": "none"
+    }
+  ],
+  "no_data": [
+    "competitor pricing",
+    "marketing spend"
+  ]
+}

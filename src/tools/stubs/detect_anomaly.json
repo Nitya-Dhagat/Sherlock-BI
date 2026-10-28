@@ -1,0 +1,34 @@
+{
+  "evidence_id": "E1",
+  "definition": "net_revenue = sum(quantity*unit_price) over product lines; cancellations negative; unattributed rows included",
+  "data_through": "2011-12-09",
+  "metric": "net_revenue",
+  "actual": 812340.55,
+  "expected": 941200.1,
+  "change_pct": -13.7,
+  "z_score": -2.4,
+  "severity": "high",
+  "method": "yoy",
+  "baseline": {
+    "start": "2010-09-27",
+    "end": "2010-11-21"
+  },
+  "trading_days": {
+    "actual": 38,
+    "expected": 40
+  },
+  "trading_day_adjusted": true,
+  "partial_period_excluded": true,
+  "checks": [
+    {
+      "method": "yoy",
+      "change_pct": -13.7,
+      "z_score": -2.4
+    },
+    {
+      "method": "stl",
+      "change_pct": -11.9,
+      "z_score": -2.1
+    }
+  ]
+}

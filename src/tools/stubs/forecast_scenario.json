@@ -1,0 +1,28 @@
+{
+  "evidence_id": "E7",
+  "definition": "net_revenue = sum(quantity*unit_price) over product lines; cancellations negative; unattributed rows included",
+  "data_through": "2011-12-09",
+  "horizon_weeks": 4,
+  "method": "exponential smoothing with yoy seasonal index",
+  "caveat": "Simple projection; not a causal estimate.",
+  "baseline": [
+    {
+      "week_start": "2011-11-21",
+      "value": 210000.0
+    },
+    {
+      "week_start": "2011-11-28",
+      "value": 205000.0
+    }
+  ],
+  "what_if": [
+    {
+      "week_start": "2011-11-21",
+      "value": 232000.0
+    },
+    {
+      "week_start": "2011-11-28",
+      "value": 227000.0
+    }
+  ]
+}

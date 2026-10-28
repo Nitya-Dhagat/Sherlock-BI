@@ -1,0 +1,11 @@
+{
+  "score": 74.5,
+  "band": "Medium",
+  "components": {
+    "coverage": 0.78,
+    "significance": 0.85,
+    "specificity": 0.71,
+    "robustness": 0.5
+  },
+  "flags": []
+}

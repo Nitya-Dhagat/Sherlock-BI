@@ -1,0 +1,37 @@
+{
+  "evidence_id": "E2",
+  "definition": "net_revenue = sum(quantity*unit_price) over product lines; cancellations negative; unattributed rows included",
+  "data_through": "2011-12-09",
+  "total_change": -128860.2,
+  "gross_decline": -146500.0,
+  "contributors": {
+    "country": [
+      {
+        "value": "United Kingdom",
+        "change": -91200.0,
+        "pct_change": -11.1,
+        "share_of_net_change": 0.71,
+        "share_of_gross_decline": 0.62,
+        "n_customers": 1480
+      },
+      {
+        "value": "Germany",
+        "change": -12400.0,
+        "pct_change": -18.0,
+        "share_of_net_change": 0.1,
+        "share_of_gross_decline": 0.08,
+        "n_customers": 52
+      }
+    ],
+    "customer_type": [
+      {
+        "value": "wholesale_like",
+        "change": -101000.0,
+        "pct_change": -15.2,
+        "share_of_net_change": 0.78,
+        "share_of_gross_decline": 0.69,
+        "n_customers": 640
+      }
+    ]
+  }
+}

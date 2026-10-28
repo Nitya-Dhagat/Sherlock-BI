@@ -1,0 +1,1543 @@
+{
+  "version": "1.0",
+  "tools": {
+    "detect_anomaly": {
+      "request": {
+        "type": "object",
+        "properties": {
+          "metric": {
+            "type": "string",
+            "enum": [
+              "net_revenue",
+              "gross_revenue",
+              "orders",
+              "active_customers",
+              "aov"
+            ]
+          },
+          "period": {
+            "type": "object",
+            "properties": {
+              "start": {
+                "type": "string",
+                "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+              },
+              "end": {
+                "type": "string",
+                "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+              }
+            },
+            "required": [
+              "start",
+              "end"
+            ],
+            "additionalProperties": true
+          },
+          "compare_to": {
+            "oneOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "previous_period",
+                  "same_period_last_year"
+                ]
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "start": {
+                    "type": "string",
+                    "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+                  },
+                  "end": {
+                    "type": "string",
+                    "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+                  }
+                },
+                "required": [
+                  "start",
+                  "end"
+                ],
+                "additionalProperties": true
+              }
+            ]
+          },
+          "filters": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "dimension": {
+                  "type": "string"
+                },
+                "value": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "dimension",
+                "value"
+              ],
+              "additionalProperties": true
+            }
+          }
+        },
+        "required": [
+          "metric",
+          "period",
+          "compare_to"
+        ],
+        "additionalProperties": true
+      },
+      "response": {
+        "type": "object",
+        "properties": {
+          "evidence_id": {
+            "type": "string",
+            "pattern": "^E\\d+$"
+          },
+          "definition": {
+            "type": "string"
+          },
+          "data_through": {
+            "type": "string",
+            "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+          },
+          "metric": {
+            "type": "string",
+            "enum": [
+              "net_revenue",
+              "gross_revenue",
+              "orders",
+              "active_customers",
+              "aov"
+            ]
+          },
+          "actual": {
+            "type": "number"
+          },
+          "expected": {
+            "type": "number"
+          },
+          "change_pct": {
+            "type": "number"
+          },
+          "z_score": {
+            "type": "number"
+          },
+          "severity": {
+            "type": "string",
+            "enum": [
+              "none",
+              "low",
+              "medium",
+              "high"
+            ]
+          },
+          "method": {
+            "type": "string",
+            "enum": [
+              "yoy",
+              "stl"
+            ]
+          },
+          "baseline": {
+            "type": "object",
+            "properties": {
+              "start": {
+                "type": "string",
+                "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+              },
+              "end": {
+                "type": "string",
+                "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+              }
+            },
+            "required": [
+              "start",
+              "end"
+            ],
+            "additionalProperties": true
+          },
+          "trading_days": {
+            "type": "object",
+            "properties": {
+              "actual": {
+                "type": "integer"
+              },
+              "expected": {
+                "type": "integer"
+              }
+            },
+            "required": [
+              "actual",
+              "expected"
+            ],
+            "additionalProperties": true
+          },
+          "trading_day_adjusted": {
+            "type": "boolean"
+          },
+          "partial_period_excluded": {
+            "type": "boolean"
+          },
+          "checks": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "method": {
+                  "type": "string",
+                  "enum": [
+                    "yoy",
+                    "stl"
+                  ]
+                },
+                "change_pct": {
+                  "type": "number"
+                },
+                "z_score": {
+                  "type": "number"
+                }
+              },
+              "required": [
+                "method",
+                "change_pct",
+                "z_score"
+              ],
+              "additionalProperties": true
+            }
+          }
+        },
+        "required": [
+          "evidence_id",
+          "definition",
+          "data_through",
+          "metric",
+          "actual",
+          "expected",
+          "change_pct",
+          "z_score",
+          "severity",
+          "method",
+          "baseline",
+          "trading_days",
+          "trading_day_adjusted",
+          "partial_period_excluded",
+          "checks"
+        ],
+        "additionalProperties": true
+      }
+    },
+    "drill_down": {
+      "request": {
+        "type": "object",
+        "properties": {
+          "metric": {
+            "type": "string",
+            "enum": [
+              "net_revenue",
+              "gross_revenue",
+              "orders",
+              "active_customers",
+              "aov"
+            ]
+          },
+          "period": {
+            "type": "object",
+            "properties": {
+              "start": {
+                "type": "string",
+                "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+              },
+              "end": {
+                "type": "string",
+                "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+              }
+            },
+            "required": [
+              "start",
+              "end"
+            ],
+            "additionalProperties": true
+          },
+          "compare_to": {
+            "oneOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "previous_period",
+                  "same_period_last_year"
+                ]
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "start": {
+                    "type": "string",
+                    "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+                  },
+                  "end": {
+                    "type": "string",
+                    "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+                  }
+                },
+                "required": [
+                  "start",
+                  "end"
+                ],
+                "additionalProperties": true
+              }
+            ]
+          },
+          "filters": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "dimension": {
+                  "type": "string"
+                },
+                "value": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "dimension",
+                "value"
+              ],
+              "additionalProperties": true
+            }
+          },
+          "dimensions": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": [
+                "country",
+                "uk_vs_international",
+                "customer_type",
+                "tenure",
+                "rfm_tier",
+                "category"
+              ]
+            }
+          },
+          "top_k": {
+            "type": "integer"
+          }
+        },
+        "required": [
+          "metric",
+          "period",
+          "compare_to",
+          "dimensions"
+        ],
+        "additionalProperties": true
+      },
+      "response": {
+        "type": "object",
+        "properties": {
+          "evidence_id": {
+            "type": "string",
+            "pattern": "^E\\d+$"
+          },
+          "definition": {
+            "type": "string"
+          },
+          "data_through": {
+            "type": "string",
+            "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+          },
+          "total_change": {
+            "type": "number"
+          },
+          "gross_decline": {
+            "type": "number"
+          },
+          "contributors": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "value": {
+                    "type": "string"
+                  },
+                  "change": {
+                    "type": "number"
+                  },
+                  "pct_change": {
+                    "type": "number"
+                  },
+                  "share_of_net_change": {
+                    "type": "number"
+                  },
+                  "share_of_gross_decline": {
+                    "type": "number"
+                  },
+                  "n_customers": {
+                    "type": "integer"
+                  }
+                },
+                "required": [
+                  "value",
+                  "change",
+                  "pct_change",
+                  "share_of_net_change",
+                  "share_of_gross_decline",
+                  "n_customers"
+                ],
+                "additionalProperties": true
+              }
+            }
+          }
+        },
+        "required": [
+          "evidence_id",
+          "definition",
+          "data_through",
+          "total_change",
+          "gross_decline",
+          "contributors"
+        ],
+        "additionalProperties": true
+      }
+    },
+    "driver_decomposition": {
+      "request": {
+        "type": "object",
+        "properties": {
+          "metric": {
+            "type": "string",
+            "enum": [
+              "net_revenue",
+              "gross_revenue",
+              "orders",
+              "active_customers",
+              "aov"
+            ]
+          },
+          "period": {
+            "type": "object",
+            "properties": {
+              "start": {
+                "type": "string",
+                "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+              },
+              "end": {
+                "type": "string",
+                "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+              }
+            },
+            "required": [
+              "start",
+              "end"
+            ],
+            "additionalProperties": true
+          },
+          "compare_to": {
+            "oneOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "previous_period",
+                  "same_period_last_year"
+                ]
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "start": {
+                    "type": "string",
+                    "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+                  },
+                  "end": {
+                    "type": "string",
+                    "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+                  }
+                },
+                "required": [
+                  "start",
+                  "end"
+                ],
+                "additionalProperties": true
+              }
+            ]
+          },
+          "filters": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "dimension": {
+                  "type": "string"
+                },
+                "value": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "dimension",
+                "value"
+              ],
+              "additionalProperties": true
+            }
+          }
+        },
+        "required": [
+          "metric",
+          "period",
+          "compare_to"
+        ],
+        "additionalProperties": true
+      },
+      "response": {
+        "type": "object",
+        "properties": {
+          "evidence_id": {
+            "type": "string",
+            "pattern": "^E\\d+$"
+          },
+          "definition": {
+            "type": "string"
+          },
+          "data_through": {
+            "type": "string",
+            "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+          },
+          "total_change": {
+            "type": "number"
+          },
+          "effects": {
+            "type": "object",
+            "properties": {
+              "active_customers": {
+                "type": "object",
+                "properties": {
+                  "change": {
+                    "type": "number"
+                  },
+                  "share": {
+                    "type": "number"
+                  }
+                },
+                "required": [
+                  "change",
+                  "share"
+                ],
+                "additionalProperties": true
+              },
+              "orders_per_customer": {
+                "type": "object",
+                "properties": {
+                  "change": {
+                    "type": "number"
+                  },
+                  "share": {
+                    "type": "number"
+                  }
+                },
+                "required": [
+                  "change",
+                  "share"
+                ],
+                "additionalProperties": true
+              },
+              "aov": {
+                "type": "object",
+                "properties": {
+                  "change": {
+                    "type": "number"
+                  },
+                  "share": {
+                    "type": "number"
+                  }
+                },
+                "required": [
+                  "change",
+                  "share"
+                ],
+                "additionalProperties": true
+              },
+              "unattributed": {
+                "type": "object",
+                "properties": {
+                  "change": {
+                    "type": "number"
+                  },
+                  "share": {
+                    "type": "number"
+                  }
+                },
+                "required": [
+                  "change",
+                  "share"
+                ],
+                "additionalProperties": true
+              }
+            },
+            "required": [
+              "active_customers",
+              "orders_per_customer",
+              "aov",
+              "unattributed"
+            ],
+            "additionalProperties": true
+          },
+          "sum_check": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "evidence_id",
+          "definition",
+          "data_through",
+          "total_change",
+          "effects",
+          "sum_check"
+        ],
+        "additionalProperties": true
+      }
+    },
+    "customer_movement": {
+      "request": {
+        "type": "object",
+        "properties": {
+          "metric": {
+            "type": "string",
+            "enum": [
+              "net_revenue",
+              "gross_revenue",
+              "orders",
+              "active_customers",
+              "aov"
+            ]
+          },
+          "period": {
+            "type": "object",
+            "properties": {
+              "start": {
+                "type": "string",
+                "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+              },
+              "end": {
+                "type": "string",
+                "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+              }
+            },
+            "required": [
+              "start",
+              "end"
+            ],
+            "additionalProperties": true
+          },
+          "compare_to": {
+            "oneOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "previous_period",
+                  "same_period_last_year"
+                ]
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "start": {
+                    "type": "string",
+                    "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+                  },
+                  "end": {
+                    "type": "string",
+                    "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+                  }
+                },
+                "required": [
+                  "start",
+                  "end"
+                ],
+                "additionalProperties": true
+              }
+            ]
+          },
+          "filters": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "dimension": {
+                  "type": "string"
+                },
+                "value": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "dimension",
+                "value"
+              ],
+              "additionalProperties": true
+            }
+          },
+          "window_days": {
+            "type": "integer"
+          }
+        },
+        "required": [
+          "metric",
+          "period",
+          "compare_to"
+        ],
+        "additionalProperties": true
+      },
+      "response": {
+        "type": "object",
+        "properties": {
+          "evidence_id": {
+            "type": "string",
+            "pattern": "^E\\d+$"
+          },
+          "definition": {
+            "type": "string"
+          },
+          "data_through": {
+            "type": "string",
+            "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+          },
+          "window_days": {
+            "type": "integer"
+          },
+          "total_change": {
+            "type": "number"
+          },
+          "retained": {
+            "type": "object",
+            "properties": {
+              "customers": {
+                "type": "integer"
+              },
+              "revenue_change": {
+                "type": "number"
+              },
+              "share_of_total_change": {
+                "type": "number"
+              }
+            },
+            "required": [
+              "customers",
+              "revenue_change",
+              "share_of_total_change"
+            ],
+            "additionalProperties": true
+          },
+          "lost": {
+            "type": "object",
+            "properties": {
+              "customers": {
+                "type": "integer"
+              },
+              "revenue_change": {
+                "type": "number"
+              },
+              "share_of_total_change": {
+                "type": "number"
+              }
+            },
+            "required": [
+              "customers",
+              "revenue_change",
+              "share_of_total_change"
+            ],
+            "additionalProperties": true
+          },
+          "new": {
+            "type": "object",
+            "properties": {
+              "customers": {
+                "type": "integer"
+              },
+              "revenue_change": {
+                "type": "number"
+              },
+              "share_of_total_change": {
+                "type": "number"
+              }
+            },
+            "required": [
+              "customers",
+              "revenue_change",
+              "share_of_total_change"
+            ],
+            "additionalProperties": true
+          },
+          "unattributed": {
+            "type": "object",
+            "properties": {
+              "revenue_change": {
+                "type": "number"
+              },
+              "share_of_total_change": {
+                "type": "number"
+              }
+            },
+            "required": [
+              "revenue_change",
+              "share_of_total_change"
+            ],
+            "additionalProperties": true
+          },
+          "top10_concentration": {
+            "type": "number"
+          },
+          "concentrated_in_few_accounts": {
+            "type": "boolean"
+          },
+          "top_lost_accounts": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "customer_id": {
+                  "type": "integer"
+                },
+                "revenue_change": {
+                  "type": "number"
+                }
+              },
+              "required": [
+                "customer_id",
+                "revenue_change"
+              ],
+              "additionalProperties": true
+            }
+          }
+        },
+        "required": [
+          "evidence_id",
+          "definition",
+          "data_through",
+          "window_days",
+          "total_change",
+          "retained",
+          "lost",
+          "new",
+          "unattributed",
+          "top10_concentration",
+          "concentrated_in_few_accounts",
+          "top_lost_accounts"
+        ],
+        "additionalProperties": true
+      }
+    },
+    "significance_test": {
+      "request": {
+        "type": "object",
+        "properties": {
+          "metric": {
+            "type": "string",
+            "enum": [
+              "net_revenue",
+              "gross_revenue",
+              "orders",
+              "active_customers",
+              "aov"
+            ]
+          },
+          "period": {
+            "type": "object",
+            "properties": {
+              "start": {
+                "type": "string",
+                "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+              },
+              "end": {
+                "type": "string",
+                "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+              }
+            },
+            "required": [
+              "start",
+              "end"
+            ],
+            "additionalProperties": true
+          },
+          "compare_to": {
+            "oneOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "previous_period",
+                  "same_period_last_year"
+                ]
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "start": {
+                    "type": "string",
+                    "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+                  },
+                  "end": {
+                    "type": "string",
+                    "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+                  }
+                },
+                "required": [
+                  "start",
+                  "end"
+                ],
+                "additionalProperties": true
+              }
+            ]
+          },
+          "filters": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "dimension": {
+                  "type": "string"
+                },
+                "value": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "dimension",
+                "value"
+              ],
+              "additionalProperties": true
+            }
+          },
+          "segment": {
+            "type": "object",
+            "properties": {
+              "dimension": {
+                "type": "string"
+              },
+              "value": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "dimension",
+              "value"
+            ],
+            "additionalProperties": true
+          }
+        },
+        "required": [
+          "metric",
+          "period",
+          "compare_to",
+          "segment"
+        ],
+        "additionalProperties": true
+      },
+      "response": {
+        "type": "object",
+        "properties": {
+          "evidence_id": {
+            "type": "string",
+            "pattern": "^E\\d+$"
+          },
+          "definition": {
+            "type": "string"
+          },
+          "data_through": {
+            "type": "string",
+            "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+          },
+          "method": {
+            "type": "string"
+          },
+          "effect_size": {
+            "type": "number"
+          },
+          "ci_low": {
+            "type": "number"
+          },
+          "ci_high": {
+            "type": "number"
+          },
+          "p_value": {
+            "type": "number"
+          },
+          "strength": {
+            "type": "string",
+            "enum": [
+              "supporting",
+              "weak",
+              "none"
+            ]
+          },
+          "n_customers": {
+            "type": "integer"
+          },
+          "caveat": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "evidence_id",
+          "definition",
+          "data_through",
+          "method",
+          "effect_size",
+          "ci_low",
+          "ci_high",
+          "p_value",
+          "strength",
+          "n_customers",
+          "caveat"
+        ],
+        "additionalProperties": true
+      }
+    },
+    "check_external_factors": {
+      "request": {
+        "type": "object",
+        "properties": {
+          "metric": {
+            "type": "string",
+            "enum": [
+              "net_revenue",
+              "gross_revenue",
+              "orders",
+              "active_customers",
+              "aov"
+            ]
+          },
+          "period": {
+            "type": "object",
+            "properties": {
+              "start": {
+                "type": "string",
+                "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+              },
+              "end": {
+                "type": "string",
+                "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+              }
+            },
+            "required": [
+              "start",
+              "end"
+            ],
+            "additionalProperties": true
+          },
+          "compare_to": {
+            "oneOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "previous_period",
+                  "same_period_last_year"
+                ]
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "start": {
+                    "type": "string",
+                    "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+                  },
+                  "end": {
+                    "type": "string",
+                    "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+                  }
+                },
+                "required": [
+                  "start",
+                  "end"
+                ],
+                "additionalProperties": true
+              }
+            ]
+          },
+          "filters": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "dimension": {
+                  "type": "string"
+                },
+                "value": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "dimension",
+                "value"
+              ],
+              "additionalProperties": true
+            }
+          }
+        },
+        "required": [
+          "metric",
+          "period",
+          "compare_to"
+        ],
+        "additionalProperties": true
+      },
+      "response": {
+        "type": "object",
+        "properties": {
+          "evidence_id": {
+            "type": "string",
+            "pattern": "^E\\d+$"
+          },
+          "definition": {
+            "type": "string"
+          },
+          "data_through": {
+            "type": "string",
+            "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+          },
+          "trading_days": {
+            "type": "object",
+            "properties": {
+              "actual": {
+                "type": "integer"
+              },
+              "expected": {
+                "type": "integer"
+              },
+              "delta": {
+                "type": "integer"
+              }
+            },
+            "required": [
+              "actual",
+              "expected",
+              "delta"
+            ],
+            "additionalProperties": true
+          },
+          "price_index_change_pct": {
+            "type": "number"
+          },
+          "products_dropped": {
+            "type": "integer"
+          },
+          "products_launched": {
+            "type": "integer"
+          },
+          "holiday_flags": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "tested_series": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "name": {
+                  "type": "string"
+                },
+                "effect": {
+                  "type": "number"
+                },
+                "strength": {
+                  "type": "string",
+                  "enum": [
+                    "supporting",
+                    "weak",
+                    "none"
+                  ]
+                }
+              },
+              "required": [
+                "name",
+                "effect",
+                "strength"
+              ],
+              "additionalProperties": true
+            }
+          },
+          "no_data": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "evidence_id",
+          "definition",
+          "data_through",
+          "trading_days",
+          "price_index_change_pct",
+          "products_dropped",
+          "products_launched",
+          "holiday_flags",
+          "tested_series",
+          "no_data"
+        ],
+        "additionalProperties": true
+      }
+    },
+    "forecast_scenario": {
+      "request": {
+        "type": "object",
+        "properties": {
+          "metric": {
+            "type": "string",
+            "enum": [
+              "net_revenue",
+              "gross_revenue",
+              "orders",
+              "active_customers",
+              "aov"
+            ]
+          },
+          "period": {
+            "type": "object",
+            "properties": {
+              "start": {
+                "type": "string",
+                "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+              },
+              "end": {
+                "type": "string",
+                "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+              }
+            },
+            "required": [
+              "start",
+              "end"
+            ],
+            "additionalProperties": true
+          },
+          "compare_to": {
+            "oneOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "previous_period",
+                  "same_period_last_year"
+                ]
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "start": {
+                    "type": "string",
+                    "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+                  },
+                  "end": {
+                    "type": "string",
+                    "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+                  }
+                },
+                "required": [
+                  "start",
+                  "end"
+                ],
+                "additionalProperties": true
+              }
+            ]
+          },
+          "filters": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "dimension": {
+                  "type": "string"
+                },
+                "value": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "dimension",
+                "value"
+              ],
+              "additionalProperties": true
+            }
+          },
+          "segment": {
+            "type": "object",
+            "properties": {
+              "dimension": {
+                "type": "string"
+              },
+              "value": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "dimension",
+              "value"
+            ],
+            "additionalProperties": true
+          },
+          "horizon_weeks": {
+            "type": "integer"
+          }
+        },
+        "required": [
+          "metric",
+          "period",
+          "compare_to"
+        ],
+        "additionalProperties": true
+      },
+      "response": {
+        "type": "object",
+        "properties": {
+          "evidence_id": {
+            "type": "string",
+            "pattern": "^E\\d+$"
+          },
+          "definition": {
+            "type": "string"
+          },
+          "data_through": {
+            "type": "string",
+            "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+          },
+          "horizon_weeks": {
+            "type": "integer"
+          },
+          "method": {
+            "type": "string"
+          },
+          "caveat": {
+            "type": "string"
+          },
+          "baseline": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "week_start": {
+                  "type": "string",
+                  "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+                },
+                "value": {
+                  "type": "number"
+                }
+              },
+              "required": [
+                "week_start",
+                "value"
+              ],
+              "additionalProperties": true
+            }
+          },
+          "what_if": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "week_start": {
+                  "type": "string",
+                  "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+                },
+                "value": {
+                  "type": "number"
+                }
+              },
+              "required": [
+                "week_start",
+                "value"
+              ],
+              "additionalProperties": true
+            }
+          }
+        },
+        "required": [
+          "evidence_id",
+          "definition",
+          "data_through",
+          "horizon_weeks",
+          "method",
+          "caveat",
+          "baseline",
+          "what_if"
+        ],
+        "additionalProperties": true
+      }
+    },
+    "compute_confidence": {
+      "request": {
+        "type": "object",
+        "properties": {
+          "evidence_ids": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "evidence_ids"
+        ],
+        "additionalProperties": true
+      },
+      "response": {
+        "type": "object",
+        "properties": {
+          "score": {
+            "type": "number"
+          },
+          "band": {
+            "type": "string",
+            "enum": [
+              "High",
+              "Medium",
+              "Low"
+            ]
+          },
+          "components": {
+            "type": "object",
+            "properties": {
+              "coverage": {
+                "type": "number"
+              },
+              "significance": {
+                "type": "number"
+              },
+              "specificity": {
+                "type": "number"
+              },
+              "robustness": {
+                "type": "number"
+              }
+            },
+            "required": [
+              "coverage",
+              "significance",
+              "specificity",
+              "robustness"
+            ],
+            "additionalProperties": true
+          },
+          "flags": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "score",
+          "band",
+          "components",
+          "flags"
+        ],
+        "additionalProperties": true
+      }
+    }
+  },
+  "error": {
+    "type": "object",
+    "properties": {
+      "error": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string",
+            "enum": [
+              "EMPTY_SLICE",
+              "BAD_PERIOD",
+              "TINY_BASE",
+              "NO_DATA",
+              "INTERNAL"
+            ]
+          },
+          "message": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "code",
+          "message"
+        ],
+        "additionalProperties": true
+      }
+    },
+    "required": [
+      "error"
+    ],
+    "additionalProperties": true
+  },
+  "report": {
+    "type": "object",
+    "properties": {
+      "headline": {
+        "type": "string"
+      },
+      "findings": {
+        "type": "array",
+        "items": {
+          "type": "object",
+          "properties": {
+            "text": {
+              "type": "string"
+            },
+            "evidence_ids": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          },
+          "required": [
+            "text",
+            "evidence_ids"
+          ],
+          "additionalProperties": true
+        }
+      },
+      "actions": {
+        "type": "array",
+        "items": {
+          "type": "object",
+          "properties": {
+            "text": {
+              "type": "string"
+            },
+            "evidence_ids": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          },
+          "required": [
+            "text"
+          ],
+          "additionalProperties": true
+        }
+      },
+      "hypotheses": {
+        "type": "array",
+        "items": {
+          "type": "string"
+        }
+      },
+      "data_gaps": {
+        "type": "array",
+        "items": {
+          "type": "string"
+        }
+      }
+    },
+    "required": [
+      "headline",
+      "findings",
+      "actions",
+      "hypotheses"
+    ],
+    "additionalProperties": true
+  }
+}

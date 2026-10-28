@@ -1,0 +1,38 @@
+{
+  "evidence_id": "E4",
+  "definition": "net_revenue = sum(quantity*unit_price) over product lines; cancellations negative; unattributed rows included",
+  "data_through": "2011-12-09",
+  "window_days": 90,
+  "total_change": -128860.2,
+  "retained": {
+    "customers": 910,
+    "revenue_change": -20000.0,
+    "share_of_total_change": 0.16
+  },
+  "lost": {
+    "customers": 210,
+    "revenue_change": -98000.0,
+    "share_of_total_change": 0.76
+  },
+  "new": {
+    "customers": 150,
+    "revenue_change": 14000.0,
+    "share_of_total_change": -0.11
+  },
+  "unattributed": {
+    "revenue_change": -24860.2,
+    "share_of_total_change": 0.19
+  },
+  "top10_concentration": 0.41,
+  "concentrated_in_few_accounts": false,
+  "top_lost_accounts": [
+    {
+      "customer_id": 14646,
+      "revenue_change": -9800.0
+    },
+    {
+      "customer_id": 18102,
+      "revenue_change": -7400.0
+    }
+  ]
+}

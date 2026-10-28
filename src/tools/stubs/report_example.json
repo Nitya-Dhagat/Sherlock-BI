@@ -1,0 +1,22 @@
+{
+  "headline": "Net revenue fell 13.7% year over year, driven by lost wholesale-like customers.",
+  "findings": [
+    {
+      "text": "Wholesale-like customers explain 78% of the net decline.",
+      "evidence_ids": [
+        "E2"
+      ]
+    }
+  ],
+  "actions": [
+    {
+      "text": "Contact the top lost accounts.",
+      "evidence_ids": [
+        "E4"
+      ]
+    }
+  ],
+  "hypotheses": [
+    "A competitor may have won these accounts (cannot be verified from this data)."
+  ]
+}

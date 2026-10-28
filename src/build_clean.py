@@ -389,4 +389,4 @@ def customer_features_asof(con, as_of):
 
 
 if __name__ == "__main__":
-    main()
+    main() 
