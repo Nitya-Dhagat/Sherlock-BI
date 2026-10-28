@@ -1,1 +1,3 @@
+venvdata/clean/whybot.duckdb
+data/clean/transactions_clean.parquet
 venv
