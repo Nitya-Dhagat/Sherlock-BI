@@ -1,0 +1,556 @@
+{
+  "source": "data/raw/online_retail_II.xlsx (both sheets), computed with pandas independently of the DuckDB pipeline",
+  "dataset_checks": {
+    "raw_rows": 1067371,
+    "product_line_rows": 1021124,
+    "bulk_reversal_rows": 4,
+    "net_revenue_total": 18926266.18
+  },
+  "data_start": "2009-12-01",
+  "data_through": "2011-12-09",
+  "last_complete_day": "2011-12-04",
+  "analytic_cases": [
+    {
+      "id": "A1",
+      "type": "analytic",
+      "question": "Why did revenue drop between 2011-09-26 and 2011-11-20 compared with last year?",
+      "why_selected": "demo window from data/scenario.yaml, on the REAL data",
+      "expected_facts": {
+        "period": {
+          "start": "2011-09-26",
+          "end": "2011-11-20"
+        },
+        "compare_to": "same_period_last_year",
+        "baseline": {
+          "start": "2010-09-27",
+          "end": "2010-11-21"
+        },
+        "anomaly": {
+          "net_revenue_current": 2207758.64,
+          "net_revenue_baseline": 2257638.78,
+          "net_change": -49880.14,
+          "raw_change_pct": -2.21,
+          "trading_days": {
+            "current": 48,
+            "baseline": 48
+          },
+          "adjusted_change_pct": -2.21,
+          "z_score": -0.34,
+          "severity": "none",
+          "is_anomaly": false,
+          "direction": "decline"
+        },
+        "country": {
+          "top_country": "United Kingdom",
+          "top_country_change": -96199.36,
+          "top_country_share_of_gross_decline": 0.6753,
+          "uk_change": -96199.36,
+          "international_change": 46319.22
+        },
+        "tenure_change": {
+          "returning": -267825.92,
+          "new": 184146.94,
+          "unattributed": 33798.84
+        },
+        "drivers": {
+          "levels": {
+            "baseline": {
+              "active_customers": 2321,
+              "orders": 4187,
+              "aov": 467.83
+            },
+            "current": {
+              "active_customers": 2274,
+              "orders": 4008,
+              "aov": 467.84
+            }
+          },
+          "effects": {
+            "active_customers": -39210.33,
+            "orders_per_customer": -44532.22,
+            "aov": 63.57,
+            "unattributed": 33798.84
+          },
+          "dominant_driver": "orders_per_customer"
+        },
+        "customer_movement": {
+          "retained": {
+            "customers": 1299,
+            "revenue_change": -179044.26
+          },
+          "lost": {
+            "customers": 1076,
+            "revenue_change": -532493.96
+          },
+          "new": {
+            "customers": 1156,
+            "revenue_change": 627859.24
+          },
+          "lost_check_window_end": "2011-12-04"
+        }
+      },
+      "expected_tools_required": [
+        "detect_anomaly"
+      ],
+      "expected_behaviour": "Say the change is within normal variation (severity none); do not invent a cause. Further drill-down is optional."
+    },
+    {
+      "id": "A2",
+      "type": "analytic",
+      "question": "Why did revenue drop between 2011-02-14 and 2011-04-10 compared with last year?",
+      "why_selected": "largest 8-week year-over-year decline",
+      "expected_facts": {
+        "period": {
+          "start": "2011-02-14",
+          "end": "2011-04-10"
+        },
+        "compare_to": "same_period_last_year",
+        "baseline": {
+          "start": "2010-02-15",
+          "end": "2010-04-11"
+        },
+        "anomaly": {
+          "net_revenue_current": 1129962.58,
+          "net_revenue_baseline": 1238893.35,
+          "net_change": -108930.77,
+          "raw_change_pct": -8.79,
+          "trading_days": {
+            "current": 48,
+            "baseline": 45
+          },
+          "adjusted_change_pct": -14.49,
+          "z_score": -4.35,
+          "severity": "high",
+          "is_anomaly": true,
+          "direction": "decline"
+        },
+        "country": {
+          "top_country": "United Kingdom",
+          "top_country_change": -136842.75,
+          "top_country_share_of_gross_decline": 0.7708,
+          "uk_change": -136842.75,
+          "international_change": 27911.98
+        },
+        "tenure_change": {
+          "returning": -248680.67,
+          "new": 115356.87,
+          "unattributed": 24393.03
+        },
+        "drivers": {
+          "levels": {
+            "baseline": {
+              "active_customers": 1463,
+              "orders": 2428,
+              "aov": 455.93
+            },
+            "current": {
+              "active_customers": 1450,
+              "orders": 2270,
+              "aov": 428.93
+            }
+          },
+          "effects": {
+            "active_customers": -9272.79,
+            "orders_per_customer": -60632.89,
+            "aov": -63418.12,
+            "unattributed": 24393.03
+          },
+          "dominant_driver": "aov"
+        },
+        "customer_movement": {
+          "retained": {
+            "customers": 782,
+            "revenue_change": -184905.09
+          },
+          "lost": {
+            "customers": 717,
+            "revenue_change": -356453.23
+          },
+          "new": {
+            "customers": 848,
+            "revenue_change": 408034.52
+          },
+          "lost_check_window_end": "2011-05-14"
+        }
+      },
+      "expected_tools_required": [
+        "detect_anomaly",
+        "drill_down",
+        "driver_decomposition",
+        "customer_movement"
+      ],
+      "expected_behaviour": "Confirm a real decline (high severity). Locate it (top country United Kingdom), explain HOW (dominant driver: aov) and WHO (lost vs new customers), then test the top segment's significance. Report 'driven by'/'consistent with', not proof."
+    },
+    {
+      "id": "A3",
+      "type": "analytic",
+      "question": "Why did revenue drop between 2011-03-14 and 2011-04-10 compared with last year?",
+      "why_selected": "largest 4-week year-over-year decline",
+      "expected_facts": {
+        "period": {
+          "start": "2011-03-14",
+          "end": "2011-04-10"
+        },
+        "compare_to": "same_period_last_year",
+        "baseline": {
+          "start": "2010-03-15",
+          "end": "2010-04-11"
+        },
+        "anomaly": {
+          "net_revenue_current": 594674.83,
+          "net_revenue_baseline": 621676.81,
+          "net_change": -27001.98,
+          "raw_change_pct": -4.34,
+          "trading_days": {
+            "current": 24,
+            "baseline": 21
+          },
+          "adjusted_change_pct": -16.3,
+          "z_score": -2.37,
+          "severity": "high",
+          "is_anomaly": true,
+          "direction": "decline"
+        },
+        "country": {
+          "top_country": "United Kingdom",
+          "top_country_change": -45867.54,
+          "top_country_share_of_gross_decline": 0.7183,
+          "uk_change": -45867.54,
+          "international_change": 18865.56
+        },
+        "tenure_change": {
+          "returning": -95516.49,
+          "new": 55773.48,
+          "unattributed": 12741.03
+        },
+        "drivers": {
+          "levels": {
+            "baseline": {
+              "active_customers": 885,
+              "orders": 1220,
+              "aov": 444.95
+            },
+            "current": {
+              "active_customers": 910,
+              "orders": 1209,
+              "aov": 416.13
+            }
+          },
+          "effects": {
+            "active_customers": 14561.25,
+            "orders_per_customer": -19295.63,
+            "aov": -35008.63,
+            "unattributed": 12741.03
+          },
+          "dominant_driver": "aov"
+        },
+        "customer_movement": {
+          "retained": {
+            "customers": 540,
+            "revenue_change": -146181.16
+          },
+          "lost": {
+            "customers": 416,
+            "revenue_change": -189349.97
+          },
+          "new": {
+            "customers": 643,
+            "revenue_change": 295788.12
+          },
+          "lost_check_window_end": "2011-06-11"
+        }
+      },
+      "expected_tools_required": [
+        "detect_anomaly",
+        "drill_down",
+        "driver_decomposition",
+        "customer_movement"
+      ],
+      "expected_behaviour": "Confirm a real decline (high severity). Locate it (top country United Kingdom), explain HOW (dominant driver: aov) and WHO (lost vs new customers), then test the top segment's significance. Report 'driven by'/'consistent with', not proof."
+    },
+    {
+      "id": "A4",
+      "type": "analytic",
+      "question": "Why did revenue rise between 2011-08-01 and 2011-09-25 compared with last year?",
+      "why_selected": "largest 8-week year-over-year increase",
+      "expected_facts": {
+        "period": {
+          "start": "2011-08-01",
+          "end": "2011-09-25"
+        },
+        "compare_to": "same_period_last_year",
+        "baseline": {
+          "start": "2010-08-02",
+          "end": "2010-09-26"
+        },
+        "anomaly": {
+          "net_revenue_current": 1521771.72,
+          "net_revenue_baseline": 1260615.67,
+          "net_change": 261156.05,
+          "raw_change_pct": 20.72,
+          "trading_days": {
+            "current": 47,
+            "baseline": 47
+          },
+          "adjusted_change_pct": 20.72,
+          "z_score": 2.52,
+          "severity": "high",
+          "is_anomaly": true,
+          "direction": "increase"
+        },
+        "country": {
+          "top_country": "United Kingdom",
+          "top_country_change": 202151.48,
+          "top_country_share_of_gross_decline": 0.0,
+          "uk_change": 202151.48,
+          "international_change": 59004.57
+        },
+        "tenure_change": {
+          "returning": 92899.86,
+          "new": 129014.3,
+          "unattributed": 39241.89
+        },
+        "drivers": {
+          "levels": {
+            "baseline": {
+              "active_customers": 1515,
+              "orders": 2541,
+              "aov": 447.32
+            },
+            "current": {
+              "active_customers": 1598,
+              "orders": 2615,
+              "aov": 519.53
+            }
+          },
+          "effects": {
+            "active_customers": 66367.99,
+            "orders_per_customer": -30648.49,
+            "aov": 186194.66,
+            "unattributed": 39241.89
+          },
+          "dominant_driver": "aov"
+        },
+        "customer_movement": {
+          "retained": {
+            "customers": 914,
+            "revenue_change": -45069.15
+          },
+          "lost": {
+            "customers": 656,
+            "revenue_change": -310545.31
+          },
+          "new": {
+            "customers": 927,
+            "revenue_change": 577528.62
+          },
+          "lost_check_window_end": "2011-10-29"
+        }
+      },
+      "expected_tools_required": [
+        "detect_anomaly",
+        "drill_down",
+        "driver_decomposition",
+        "customer_movement"
+      ],
+      "expected_behaviour": "Confirm a real increase (high severity). Locate it (top country United Kingdom), explain HOW (dominant driver: aov) and WHO (lost vs new customers), then test the top segment's significance. Report 'driven by'/'consistent with', not proof."
+    },
+    {
+      "id": "A5",
+      "type": "analytic",
+      "question": "Why did revenue change between 2010-12-20 and 2011-02-13 compared with last year?",
+      "why_selected": "flattest 8-week window (no real change)",
+      "expected_facts": {
+        "period": {
+          "start": "2010-12-20",
+          "end": "2011-02-13"
+        },
+        "compare_to": "same_period_last_year",
+        "baseline": {
+          "start": "2009-12-21",
+          "end": "2010-02-14"
+        },
+        "anomaly": {
+          "net_revenue_current": 859506.55,
+          "net_revenue_baseline": 858903.81,
+          "net_change": 602.74,
+          "raw_change_pct": 0.07,
+          "trading_days": {
+            "current": 39,
+            "baseline": 39
+          },
+          "adjusted_change_pct": 0.07,
+          "z_score": -0.52,
+          "severity": "none",
+          "is_anomaly": false,
+          "direction": "flat"
+        },
+        "country": {
+          "top_country": "United Kingdom",
+          "top_country_change": 11715.0,
+          "top_country_share_of_gross_decline": 0.0,
+          "uk_change": 11715.0,
+          "international_change": -11112.26
+        },
+        "tenure_change": {
+          "returning": -136093.74,
+          "new": 73492.76,
+          "unattributed": 63203.72
+        },
+        "drivers": {
+          "levels": {
+            "baseline": {
+              "active_customers": 993,
+              "orders": 1538,
+              "aov": 484.97
+            },
+            "current": {
+              "active_customers": 998,
+              "orders": 1499,
+              "aov": 455.82
+            }
+          },
+          "effects": {
+            "active_customers": 3586.74,
+            "orders_per_customer": -21928.63,
+            "aov": -44259.09,
+            "unattributed": 63203.72
+          },
+          "dominant_driver": "unattributed"
+        },
+        "customer_movement": {
+          "retained": {
+            "customers": 578,
+            "revenue_change": -161701.48
+          },
+          "lost": {
+            "customers": 493,
+            "revenue_change": -224834.65
+          },
+          "new": {
+            "customers": 609,
+            "revenue_change": 323935.15
+          },
+          "lost_check_window_end": "2011-03-19"
+        }
+      },
+      "expected_tools_required": [
+        "detect_anomaly"
+      ],
+      "expected_behaviour": "Say the change is within normal variation (severity none); do not invent a cause. Further drill-down is optional."
+    }
+  ],
+  "behaviour_cases": [
+    {
+      "id": "B1",
+      "type": "unanswerable",
+      "question": "Did a competitor take our customers?",
+      "expected_tools_required": [],
+      "expected_behaviour": "Headline says the data cannot show competitor activity; may describe what the data does show; competitor ideas only under hypotheses; data_gaps lists competitor data. Must not rule the cause in or out."
+    },
+    {
+      "id": "B2",
+      "type": "vague",
+      "question": "Why are sales bad?",
+      "expected_tools_required": [
+        "detect_anomaly"
+      ],
+      "expected_behaviour": "Uses the default period (the 8 complete weeks ending 2011-12-04) against the same period last year, states that period, and reports the expected facts for it (see default_period).",
+      "default_period": {
+        "period": {
+          "start": "2011-10-10",
+          "end": "2011-12-04"
+        },
+        "compare_to": "same_period_last_year",
+        "baseline": {
+          "start": "2010-10-11",
+          "end": "2010-12-05"
+        },
+        "anomaly": {
+          "net_revenue_current": 2306444.0,
+          "net_revenue_baseline": 2311447.19,
+          "net_change": -5003.19,
+          "raw_change_pct": -0.22,
+          "trading_days": {
+            "current": 48,
+            "baseline": 48
+          },
+          "adjusted_change_pct": -0.22,
+          "z_score": -0.2,
+          "severity": "none",
+          "is_anomaly": false,
+          "direction": "flat"
+        },
+        "country": {
+          "top_country": "United Kingdom",
+          "top_country_change": -33166.38,
+          "top_country_share_of_gross_decline": 0.4148,
+          "uk_change": -33166.38,
+          "international_change": 28163.19
+        },
+        "tenure_change": {
+          "returning": -232336.4,
+          "new": 177367.28,
+          "unattributed": 49965.93
+        },
+        "drivers": {
+          "levels": {
+            "baseline": {
+              "active_customers": 2308,
+              "orders": 4456,
+              "aov": 436.47
+            },
+            "current": {
+              "active_customers": 2307,
+              "orders": 4337,
+              "aov": 435.77
+            }
+          },
+          "effects": {
+            "active_customers": -830.89,
+            "orders_per_customer": -51067.39,
+            "aov": -3070.84,
+            "unattributed": 49965.93
+          },
+          "dominant_driver": "orders_per_customer"
+        },
+        "customer_movement": {
+          "retained": {
+            "customers": 1202,
+            "revenue_change": -143421.97
+          },
+          "lost": {
+            "customers": 1168,
+            "revenue_change": -575864.51
+          },
+          "new": {
+            "customers": 1167,
+            "revenue_change": 664317.36
+          },
+          "lost_check_window_end": "2011-12-04"
+        }
+      }
+    },
+    {
+      "id": "B3",
+      "type": "partial_period",
+      "question": "Why did revenue drop in the week of 2011-12-05?",
+      "expected_tools_required": [],
+      "expected_behaviour": "Recognises the week is incomplete (data ends 2011-12-09); does not flag it as an anomaly."
+    },
+    {
+      "id": "B4",
+      "type": "out_of_range",
+      "question": "Why did revenue drop in November 2009 compared with the year before?",
+      "expected_tools_required": [],
+      "expected_behaviour": "Says data starts 2009-12-01, so there is no baseline; no numbers invented."
+    },
+    {
+      "id": "B5",
+      "type": "out_of_scope_metric",
+      "question": "Why did our profit margin fall in October 2011?",
+      "expected_tools_required": [],
+      "expected_behaviour": "Says there is no cost data, so margin cannot be measured; may offer revenue analysis instead; data_gaps lists cost of goods."
+    }
+  ]
+}
