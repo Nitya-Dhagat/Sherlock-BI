@@ -73,9 +73,10 @@ def gemini_schema(schema):
 class GeminiClient:
     """Tries `model`, then each fallback model (WHYBOT_FALLBACK_MODELS, comma-separated) when one stays
     unavailable (429/5xx/404/timeouts). The model that answered becomes the first choice for later turns."""
-    RETRIES = 3                 # per model; backoff 2, 4 s
+    RETRIES = 2                 # per model (backoff 2 s), then move on: a busy model costs ~2 s, not ~6 s
     TIMEOUT_MS = 120_000        # per request, so one stuck call cannot hang the demo
     FALLBACKS = "gemini-3.1-flash-lite,gemini-3.8-flash"
+    THINKING = "low"            # WHYBOT_THINKING: minimal | low | medium | high. Tool choice needs little reasoning
 
     def __init__(self, model=None, api_key=None):
         from google import genai
@@ -99,9 +100,11 @@ class _GeminiConversation:
         self.t, self.owner, self.history = types, owner, []
         decls = [types.FunctionDeclaration(name=x["name"], description=x["description"],
                                            parameters_json_schema=gemini_schema(x["input_schema"])) for x in tools]
+        level = os.environ.get("WHYBOT_THINKING", GeminiClient.THINKING).upper()
         self.config = types.GenerateContentConfig(
             system_instruction=system, temperature=0, tools=[types.Tool(function_declarations=decls)],
-            automatic_function_calling=types.AutomaticFunctionCallingConfig(disable=True))
+            automatic_function_calling=types.AutomaticFunctionCallingConfig(disable=True),
+            thinking_config=types.ThinkingConfig(thinking_level=getattr(types.ThinkingLevel, level)))
 
     def send(self, user_text=None, tool_results=None):
         t = self.t
