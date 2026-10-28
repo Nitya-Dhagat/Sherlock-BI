@@ -1,0 +1,10 @@
+# Versions verified with Python 3.12.7 (tests pass on the real and scenario databases, 2026-10-28)
+duckdb==1.5.6
+pandas==3.0.6
+numpy==2.5.4
+pyarrow==26.0.0
+openpyxl==3.1.5
+statsmodels==0.15.0
+scipy==1.18.1
+jsonschema==4.26.0
+pytest==9.2.0

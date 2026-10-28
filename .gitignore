@@ -1,8 +1,19 @@
-venvdata/clean/whybot.duckdb
-data/clean/transactions_clean.parquet
 venv
+data/clean/transactions_clean.parquet
 data/scenario/whybot_scenario.duckdb
 data/clean/whybot.duckdb
 # DuckDB database files
 *.duckdb
 *.duckdb.wal
+
+# Python / tooling caches
+__pycache__/
+*.py[cod]
+.pytest_cache/
+
+# OS and editor artifacts
+.DS_Store
+tempCodeRunnerFile.py
+
+# Secrets (ANTHROPIC_API_KEY etc.)
+.env
