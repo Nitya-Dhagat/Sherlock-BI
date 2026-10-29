@@ -17,9 +17,9 @@ import plotly.graph_objects as go
 from adapters import money, pretty_label, share_pct
 
 # ---- palette ---------------------------------------------------------------
-INK = "#17181C"
-MUTED = "#6B7280"
-GRID = "#E7E9EE"
+INK = "#0F172A"
+MUTED = "#8A95A5"
+GRID = "#E3E7EC"
 DOWN = "#C8102E"      # decline
 UP = "#0B7A4B"        # growth
 NEUTRAL = "#334155"   # totals / baselines
@@ -36,7 +36,9 @@ def _shell(fig, title, height=400, legend=False):
     fig.update_layout(
         title=dict(text=title, font=dict(size=TITLE_FONT, color=INK), x=0, xanchor="left"),
         font=dict(size=BASE_FONT, color=INK, family=FONT),
-        plot_bgcolor="white", paper_bgcolor="white",
+        # transparent: the chart sits on the card that [data-testid="stPlotlyChart"]
+        # paints, so it cannot disagree with the app surface
+        plot_bgcolor="rgba(0,0,0,0)", paper_bgcolor="rgba(0,0,0,0)",
         height=height, margin=dict(l=10, r=20, t=58, b=40),
         hoverlabel=dict(font_size=BASE_FONT - 2, font_family=FONT),
         showlegend=legend,

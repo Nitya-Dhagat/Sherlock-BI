@@ -66,57 +66,296 @@ st.set_page_config(page_title="WhyBot", page_icon="🔍", layout="wide",
 # --------------------------------------------------------------------------
 CSS = """
 <style>
-  .block-container {padding-top: 1.4rem; padding-bottom: 2rem; max-width: 1560px;}
-  html, body, [class*="css"], .stMarkdown {font-size: 17px;}
-  h1 {font-size: 2.1rem !important; margin-bottom: .1rem;}
-  [data-testid="stHeader"] {background: transparent;}
+  /* ---------------------------------------------------------------
+     Design tokens. Every rule below refers to these, never raw hex,
+     so the whole app can be retuned from one block.
 
-  .wb-sub {color:#6B7280; font-size:1rem; margin-bottom:1rem;}
+     The app PINS its own light surface on the Streamlit container.
+     Without this, a laptop in system dark mode gets Streamlit's dark
+     background while this stylesheet paints near-black text on it, and
+     the trace titles disappear. The demo must not depend on whose
+     laptop it runs on. .streamlit/config.toml pins the theme too; this
+     is the belt to that pair of braces.
+  --------------------------------------------------------------- */
+  :root {
+    --bg:        #F6F7F9;
+    --surface:   #FFFFFF;
+    --surface-2: #FBFCFD;
+    --line:      #E3E7EC;
+    --line-soft: #EDF0F3;
 
-  .wb-strip {display:flex; gap:.5rem; flex-wrap:wrap; margin:.4rem 0 1rem 0;}
-  .wb-pill {border:1px solid #E7E9EE; border-radius:999px; padding:.3rem .85rem;
-            font-size:.92rem; color:#334155; background:#fff; white-space:nowrap;}
-  .wb-pill b {color:#17181C;}
-  .wb-pill-hi {background:#ECFDF5; border-color:#A7F3D0; color:#065F46;}
-  .wb-pill-md {background:#FFFBEB; border-color:#FDE68A; color:#92400E;}
-  .wb-pill-lo {background:#FEF2F2; border-color:#FECACA; color:#991B1B;}
+    --ink:       #0F172A;   /* 15.8:1 on --bg  */
+    --ink-2:     #3F4D60;   /*  8.9:1 on --bg  */
+    --ink-3:     #667385;   /*  4.9:1 on --bg  — the lightest text we allow */
 
-  .wb-step {border-left:3px solid #E7E9EE; padding:.45rem 0 .55rem .85rem;
-            margin-bottom:.35rem;}
-  .wb-step-run {border-left-color:#1D4ED8; background:
-                linear-gradient(90deg, rgba(29,78,216,.05), transparent 60%);}
-  .wb-step-ok  {border-left-color:#0B7A4B;}
-  .wb-step-err {border-left-color:#B45309; background:
-                linear-gradient(90deg, rgba(180,83,9,.05), transparent 60%);}
-  .wb-step-msg {border-left-color:#CBD5E1; font-style:italic; color:#475569;}
-  .wb-title {font-weight:600; font-size:1.02rem; color:#17181C; line-height:1.35;}
-  .wb-summary {color:#374151; font-size:.95rem; margin-top:.12rem; line-height:1.4;}
-  .wb-meta {font-family:ui-monospace, SFMono-Regular, Menlo, monospace;
-            font-size:.78rem; color:#94A3B8; margin-top:.25rem;}
-  .wb-kv {margin-top:.35rem; font-size:.88rem; color:#334155;
-          display:grid; grid-template-columns:minmax(6rem,10rem) 1fr;
-          gap:.08rem .7rem; align-items:baseline;}
-  .wb-kv span.k {color:#6B7280; overflow-wrap:anywhere;}
-  .wb-kv span.v {font-weight:600; overflow-wrap:anywhere;}
+    --accent:    #1D4ED8;
+    --good:      #0B7A4B;
+    --good-bg:   #ECFDF5;
+    --good-line: #A7F3D0;
+    --warn:      #B45309;
+    --warn-bg:   #FFFBEB;
+    --warn-line: #FDE68A;
+    --bad:       #C8102E;
+    --bad-bg:    #FEF2F2;
+    --bad-line:  #FECACA;
 
-  .wb-headline {font-size:1.5rem; font-weight:650; line-height:1.35;
-                color:#17181C; margin:.2rem 0 .9rem 0;}
-  .wb-finding {margin-bottom:.5rem; line-height:1.45;}
-  .wb-eid {font-family:ui-monospace, Menlo, monospace; font-size:.74rem;
-           background:#F1F5F9; color:#475569; border-radius:4px;
-           padding:.08rem .34rem; margin-left:.3rem;}
-  .wb-hyp {color:#6B7280;}
-  .wb-caveat {color:#6B7280; font-size:.88rem; line-height:1.45;
-              border-left:2px solid #E7E9EE; padding-left:.7rem; margin-top:.5rem;}
-  .wb-sec {font-size:.78rem; letter-spacing:.09em; text-transform:uppercase;
-           color:#94A3B8; font-weight:600; margin:1.1rem 0 .45rem 0;}
-  div[data-testid="stMetricValue"] {font-size:2.3rem;}
-  .stTabs [data-baseweb="tab"] {font-size:1rem; padding:.5rem .9rem;}
-  .wb-loader {display:flex; align-items:center; gap:.7rem; padding:.7rem 1rem; margin:.2rem 0 1rem 0;
-              border:1px solid #E7E9EE; border-radius:10px; background:#F8FAFC; color:#334155;}
-  .wb-spin {width:18px; height:18px; border:3px solid #CBD5E1; border-top-color:#2563EB;
-            border-radius:50%; animation:wb-rot .8s linear infinite;}
+    --radius: 12px;
+    --shadow: 0 1px 2px rgba(15,23,42,.04), 0 1px 8px rgba(15,23,42,.04);
+    --mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+  }
+
+  .stApp, [data-testid="stAppViewContainer"], [data-testid="stMain"],
+  [data-testid="stHeader"], [data-testid="stSidebar"] > div,
+  section.main, body, html {
+    background: var(--bg) !important;
+    color: var(--ink) !important;
+  }
+  /* headings are painted from Streamlit's own theme, which may be dark */
+  h1, h2, h3, h4, h5, h6,
+  .stMarkdown h1, .stMarkdown h2, .stMarkdown h3 {color: var(--ink) !important;}
+  [data-testid="stHeader"] {border-bottom:1px solid var(--line-soft);}
+
+  /* Demo chrome. Hide the Deploy button and the hamburger, but NOT the whole
+     toolbar: the sidebar opener lives inside it, and hiding the toolbar took
+     the demo controls away with it. */
+  [data-testid="stAppDeployButton"], [data-testid="stDecoration"],
+  #MainMenu, footer {display:none !important;}
+  [data-testid="stToolbar"] {background:transparent !important;}
+  [data-testid="stExpandSidebarButton"],
+  [data-testid="stSidebarCollapsedControl"], [data-testid="collapsedControl"] {
+      display:flex !important; visibility:visible !important; opacity:1 !important;
+      width:auto !important; height:auto !important; z-index:999 !important;}
+  [data-testid="stExpandSidebarButton"] button,
+  [data-testid="stSidebarCollapsedControl"] button,
+  [data-testid="collapsedControl"] button {
+      background:var(--surface) !important; border:1px solid var(--line) !important;
+      border-radius:8px !important; box-shadow:var(--shadow) !important;
+      color:var(--ink-2) !important;}
+  [data-testid="stExpandSidebarButton"] svg,
+  [data-testid="stSidebarCollapsedControl"] svg,
+  [data-testid="collapsedControl"] svg,
+  [data-testid="stSidebarCollapseButton"] svg {
+      fill:var(--ink-2) !important; color:var(--ink-2) !important;}
+
+  .block-container {padding-top:2.9rem; padding-bottom:1.5rem; max-width:1580px;}
+  html, body, [class*="css"], .stMarkdown, p, li, span, div {
+    font-size:17px; color:var(--ink);
+  }
+
+  /* ---------------- masthead ---------------- */
+  .wb-head {display:flex; align-items:center; gap:.85rem; margin:.1rem 0 1.15rem 0;}
+  .wb-mark {width:38px; height:38px; border-radius:10px; flex:0 0 auto;
+            background:linear-gradient(135deg, var(--accent), #4F46E5);
+            display:flex; align-items:center; justify-content:center;
+            color:#fff; font-size:1.15rem; font-weight:700;
+            box-shadow:0 2px 8px rgba(29,78,216,.28);}
+  .wb-name {font-size:1.85rem; font-weight:700; letter-spacing:-.02em;
+            line-height:1.05; color:var(--ink);}
+  .wb-sub {color:var(--ink-3); font-size:.98rem; line-height:1.2; margin-top:.12rem;}
+
+  /* ---------------- status pills ---------------- */
+  .wb-strip {display:flex; gap:.45rem; flex-wrap:wrap; margin:.2rem 0 1rem 0;}
+  .wb-pill {border:1px solid var(--line); border-radius:999px;
+            padding:.3rem .85rem; font-size:.89rem; color:var(--ink-2);
+            background:var(--surface); white-space:nowrap;}
+  .wb-pill b {color:var(--ink); font-weight:650;}
+  .wb-pill-hi {background:var(--good-bg); border-color:var(--good-line); color:#065F46;}
+  .wb-pill-hi b {color:#065F46;}
+  .wb-pill-md {background:var(--warn-bg); border-color:var(--warn-line); color:#92400E;}
+  .wb-pill-md b {color:#92400E;}
+  .wb-pill-lo {background:var(--bad-bg); border-color:var(--bad-line); color:#991B1B;}
+  .wb-pill-lo b {color:#991B1B;}
+
+  /* ---------------- section labels ---------------- */
+  .wb-sec {font-size:.74rem; letter-spacing:.1em; text-transform:uppercase;
+           color:var(--ink-3); font-weight:700; margin:.85rem 0 .4rem 0;}
+
+  /* ---------------- answer banner ---------------- */
+  .wb-answer {background:var(--surface); border:1px solid var(--line);
+              border-left:5px solid var(--accent); border-radius:var(--radius);
+              box-shadow:var(--shadow); padding:.9rem 1.2rem;
+              margin:.1rem 0 .9rem 0; display:flex; gap:1.4rem;
+              align-items:flex-start; justify-content:space-between;}
+  .wb-headline {font-size:1.3rem; font-weight:660; line-height:1.35;
+                letter-spacing:-.01em; color:var(--ink); margin:0;}
+
+  /* ---------------- trace steps ---------------- */
+  .wb-step {background:var(--surface); border:1px solid var(--line);
+            border-left:4px solid var(--line); border-radius:10px;
+            padding:.55rem .8rem .6rem; margin-bottom:.45rem;
+            box-shadow:var(--shadow);}
+  .wb-step-run {border-left-color:var(--accent); background:var(--surface-2);}
+  .wb-step-ok  {border-left-color:var(--good);}
+  .wb-step-err {border-left-color:var(--warn); background:var(--warn-bg);}
+  .wb-title {font-weight:650; font-size:1.02rem; line-height:1.35;
+             color:var(--ink); display:flex; align-items:baseline; gap:.45rem;}
+  .wb-badge {font-family:var(--mono); font-size:.7rem; color:var(--ink-3);
+             border:1px solid var(--line); border-radius:5px;
+             padding:.04rem .3rem; flex:0 0 auto;}
+  .wb-summary {color:var(--ink-2); font-size:.92rem; margin-top:.18rem;
+               line-height:1.4;}
+  .wb-meta {font-family:var(--mono); font-size:.73rem; color:var(--ink-3);
+            margin-top:.35rem; padding-top:.3rem;
+            border-top:1px dashed var(--line-soft);}
+
+  .wb-kv {margin-top:.4rem; font-size:.85rem; color:var(--ink-2);
+          display:grid; grid-template-columns:minmax(5.5rem,9.5rem) 1fr;
+          gap:.1rem .7rem; align-items:baseline;}
+  .wb-kv span.k {color:var(--ink-3); overflow-wrap:anywhere;}
+  .wb-kv span.v {font-weight:650; color:var(--ink); overflow-wrap:anywhere;
+                 font-variant-numeric:tabular-nums;}
+
+  /* ---------------- report ---------------- */
+  .wb-card {background:var(--surface); border:1px solid var(--line);
+            border-radius:var(--radius); box-shadow:var(--shadow);
+            padding:1.1rem 1.25rem;}
+  .wb-finding {margin-bottom:.55rem; line-height:1.5; color:var(--ink);}
+  .wb-eid {font-family:var(--mono); font-size:.72rem; background:var(--bg);
+           color:var(--ink-2); border:1px solid var(--line); border-radius:5px;
+           padding:.06rem .34rem; margin-left:.3rem; white-space:nowrap;}
+  .wb-hyp {color:var(--ink-3);}
+  .wb-caveat {color:var(--ink-3); font-size:.87rem; line-height:1.5;
+              border-left:2px solid var(--line); padding-left:.75rem;
+              margin-top:.6rem;}
+  .wb-score {font-size:3rem; font-weight:720; line-height:1;
+             letter-spacing:-.03em; color:var(--ink);
+             font-variant-numeric:tabular-nums;}
+
+  /* ---------------- loader ---------------- */
+  .wb-loader {display:flex; align-items:center; gap:.75rem;
+              padding:.75rem 1.1rem; margin:.2rem 0 1rem 0;
+              border:1px solid var(--line); border-radius:var(--radius);
+              background:var(--surface); color:var(--ink-2);
+              box-shadow:var(--shadow);}
+  .wb-spin {width:17px; height:17px; border:3px solid var(--line);
+            border-top-color:var(--accent); border-radius:50%;
+            animation:wb-rot .8s linear infinite; flex:0 0 auto;}
   @keyframes wb-rot {to {transform:rotate(360deg);}}
+
+  /* ---------------- streamlit widgets ---------------- */
+  .stTabs [data-baseweb="tab-list"] {gap:.15rem; border-bottom:1px solid var(--line);}
+  .stTabs [data-baseweb="tab"] {font-size:.97rem; padding:.55rem .95rem;
+                                color:var(--ink-2);}
+  .stTabs [aria-selected="true"] {color:var(--accent) !important; font-weight:650;}
+  [data-testid="stExpander"] {border:1px solid var(--line) !important;
+                              border-radius:10px !important;
+                              background:var(--surface) !important;
+                              box-shadow:var(--shadow);}
+  [data-testid="stExpander"] summary {color:var(--ink-2) !important;
+                                      font-size:.92rem;}
+  .stTextInput input {font-size:1.02rem !important; padding:.62rem .85rem !important;
+                      background:var(--surface) !important; color:var(--ink) !important;
+                      border:1px solid var(--line) !important; border-radius:10px !important;}
+  /* the primary button inherits textColor from the theme, which is near-black
+     on a near-blue fill: force white so the label is readable */
+  .stButton button {border-radius:10px !important; font-weight:650 !important;
+                    padding:.62rem 1rem !important;}
+  .stButton button[kind="primary"],
+  .stButton button[data-testid="baseButton-primary"] {
+      background:var(--accent) !important; border-color:var(--accent) !important;
+      color:#FFFFFF !important;}
+  .stButton button[kind="primary"] *,
+  .stButton button[data-testid="baseButton-primary"] * {color:#FFFFFF !important;}
+  .stButton button[kind="primary"]:hover {background:#1A43BC !important;}
+  [data-testid="stPlotlyChart"] {background:var(--surface);
+                                 border:1px solid var(--line);
+                                 border-radius:var(--radius);
+                                 box-shadow:var(--shadow);
+                                 padding:.5rem .6rem;}
+  hr {border-color:var(--line) !important;}
+
+  /* ---------------------------------------------------------------
+     Widget layer.
+
+     Streamlit paints its widgets from its OWN theme, which follows the
+     viewer's system preference when .streamlit/config.toml is absent.
+     The rules above repaint our surfaces light, so without this block a
+     dark-mode laptop gets a light page with dark dropdowns and
+     invisible options. These overrides make the app self-sufficient:
+     the config pins the theme, and this guarantees it.
+
+     The select popover is rendered in a portal attached to <body>, not
+     inside the sidebar, so it needs body-level selectors.
+  --------------------------------------------------------------- */
+  [data-testid="stSidebar"],
+  [data-testid="stSidebar"] > div,
+  [data-testid="stSidebarContent"],
+  section[data-testid="stSidebar"] * {
+      background-color:transparent; color:var(--ink);
+  }
+  [data-testid="stSidebar"] {background:var(--surface) !important;
+                             border-right:1px solid var(--line);}
+  [data-testid="stSidebar"] label,
+  [data-testid="stSidebar"] .stMarkdown,
+  [data-testid="stSidebar"] p,
+  [data-testid="stSidebar"] h1, [data-testid="stSidebar"] h2,
+  [data-testid="stSidebar"] h3 {color:var(--ink) !important;}
+  [data-testid="stCaptionContainer"], [data-testid="stCaptionContainer"] * {
+      color:var(--ink-3) !important;}
+
+  /* select / multiselect control */
+  [data-baseweb="select"] > div, [data-baseweb="select"] input,
+  [data-baseweb="input"] > div {
+      background-color:var(--surface) !important; color:var(--ink) !important;
+      border-color:var(--line) !important;}
+  [data-baseweb="select"] svg {fill:var(--ink-2) !important;}
+
+  /* dropdown popover: lives in a body-level portal */
+  [data-baseweb="popover"] [data-baseweb="menu"],
+  [data-baseweb="popover"] ul, div[data-baseweb="menu"],
+  ul[role="listbox"] {
+      background-color:var(--surface) !important; color:var(--ink) !important;
+      border:1px solid var(--line) !important;
+      box-shadow:0 8px 24px rgba(15,23,42,.14) !important;}
+  li[role="option"], [data-baseweb="menu"] li {
+      background-color:var(--surface) !important; color:var(--ink) !important;}
+  li[role="option"]:hover, li[role="option"][aria-selected="true"],
+  [data-baseweb="menu"] li:hover {
+      background-color:#EEF2FF !important; color:var(--accent) !important;}
+
+  /* radio, checkbox, slider */
+  [data-testid="stRadio"] label, [data-testid="stCheckbox"] label,
+  [data-testid="stWidgetLabel"], [data-testid="stWidgetLabel"] * {
+      color:var(--ink) !important;}
+  [data-baseweb="radio"] div[aria-checked="false"] > div {
+      border-color:var(--ink-3) !important; background:var(--surface) !important;}
+  [data-testid="stSlider"] [data-baseweb="slider"] div {color:var(--ink) !important;}
+
+  /* expander — the collapsed "thinking" blocks */
+  [data-testid="stExpander"] details {background:var(--surface) !important;
+                                      border-radius:10px !important;}
+  [data-testid="stExpander"] summary {background:var(--surface-2) !important;
+                                      border-radius:10px !important;
+                                      padding:.5rem .8rem !important;}
+  [data-testid="stExpander"] summary:hover {background:#EEF2FF !important;}
+  [data-testid="stExpander"] summary p,
+  [data-testid="stExpander"] summary span,
+  [data-testid="stExpander"] summary svg {color:var(--ink-2) !important;
+                                          fill:var(--ink-2) !important;}
+  [data-testid="stExpander"] [data-testid="stExpanderDetails"] {
+      background:var(--surface) !important; color:var(--ink-2) !important;
+      padding:.1rem .9rem .7rem !important; font-size:.93rem; line-height:1.5;}
+
+  /* accent: without config.toml Streamlit's default primary is red, which
+     fights the blue the rest of the app uses */
+  [data-baseweb="radio"] div[aria-checked="true"] > div,
+  [data-testid="stCheckbox"] label span[aria-checked="true"],
+  [data-testid="stCheckbox"] [data-baseweb="checkbox"] span[data-checked="true"] {
+      background-color:var(--accent) !important;
+      border-color:var(--accent) !important;}
+  [data-testid="stCheckbox"] [data-baseweb="checkbox"] span {
+      border:1px solid var(--ink-3) !important; background:var(--surface) !important;}
+  [data-testid="stSlider"] [role="slider"] {background-color:var(--accent) !important;}
+  [data-testid="stSlider"] div[data-baseweb="slider"] > div > div > div:first-child {
+      background:var(--accent) !important;}
+  [data-testid="stSlider"] [data-testid="stThumbValue"] {color:var(--accent) !important;}
+
+  /* info/empty states: neutral, not a blue slab */
+  [data-testid="stAlert"] {border-radius:10px !important;
+      background:var(--surface) !important; border:1px dashed var(--line) !important;
+      color:var(--ink-2) !important; box-shadow:none !important;}
+  [data-testid="stAlert"] * {color:var(--ink-2) !important;}
+  [data-testid="stAlert"] svg {display:none;}
 </style>
 """
 st.markdown(CSS, unsafe_allow_html=True)
@@ -125,6 +364,9 @@ def _fmt_score(v):
     """74.5 stays 74.5; 78.0 shows as 78."""
     return f"{v:.0f}" if abs(v - round(v)) < 0.05 else f"{v:.1f}"
 
+
+BUILD = "ui-2026-10-28f"   # shown in the sidebar; bump when this file changes
+TRACE_HEIGHT = 640          # px; the trace scrolls inside this, the page does not
 
 STRENGTH_WORD = {"supporting": "Supported by the data", "weak": "Weak evidence",
                  "none": "Not distinguishable from normal variation"}
@@ -322,7 +564,8 @@ def render_evidence_tabs():
         st.info("Charts appear as the investigation produces evidence.")
         return
 
-    specs = []
+    # The answer goes first so it is the tab selected when a run finishes.
+    specs = [("Answer", "ANSWER")] if st.session_state.report else []
     if "detect_anomaly" in norm:
         specs.append(("Is it real?", lambda: charts.timeseries_expected(norm["detect_anomaly"])))
     if "driver_decomposition" in norm:
@@ -344,7 +587,9 @@ def render_evidence_tabs():
     tabs = st.tabs([s[0] for s in specs])
     for tab, (label, build) in zip(tabs, specs):
         with tab:
-            if label == "Where?":
+            if build == "ANSWER":
+                render_answer_panel()
+            elif label == "Where?":
                 d = norm["drill_down"]
                 dim = st.radio("dimension", d["dimensions"], horizontal=True,
                                key="drill_dim", label_visibility="collapsed")
@@ -369,79 +614,63 @@ def render_evidence_tabs():
 # --------------------------------------------------------------------------
 # report card
 # --------------------------------------------------------------------------
-def render_report():
+def render_answer_panel():
+    """The report, stacked for a narrow column.
+
+    This lives in the first tab beside the trace instead of below it: the old
+    layout put the answer a full screen-scroll under an eight-step trace, which
+    is exactly the scroll the playbook says not to do on stage.
+    """
     rep = st.session_state.report
     conf = st.session_state.confidence
     if not rep:
+        st.info("The report appears when the investigation finishes.")
         return
 
-    left, right = st.columns([3, 2], gap="large")
+    if rep["actions"]:
+        st.markdown("<div class='wb-sec' style='margin-top:.2rem;'>"
+                    "Recommended action</div>"
+                    + "".join(f"<div class='wb-finding'>• {a}</div>"
+                              for a in rep["actions"]), unsafe_allow_html=True)
 
-    with left:
-        st.markdown(f"<div class='wb-headline'>{rep['headline']}</div>",
+    if rep["findings"]:
+        st.markdown("<div class='wb-sec'>Findings</div>"
+                    + "".join(
+                        f"<div class='wb-finding'>• {f['text']}"
+                        + "".join(f"<span class='wb-eid'>{e}</span>"
+                                  for e in f["evidence_ids"]) + "</div>"
+                        for f in rep["findings"]), unsafe_allow_html=True)
+
+    if rep["hypotheses"]:
+        st.markdown("<div class='wb-sec'>Hypotheses — not verified, not scored</div>"
+                    + "".join(
+                        f"<div class='wb-finding wb-hyp'>• {h['text']}"
+                        + (f" ({h['why']})" if h["why"] else "") + "</div>"
+                        for h in rep["hypotheses"]), unsafe_allow_html=True)
+
+    sig = st.session_state.norm.get("significance_test")
+    if sig:
+        word = STRENGTH_WORD.get(str(sig["strength"]).lower(), sig["strength"])
+        iv = (f"[{ad.pct(sig['ci_low'])}, {ad.pct(sig['ci_high'])}]"
+              if sig["effect_is_fraction"]
+              else f"[{ad.money(sig['ci_low'])}, {ad.money(sig['ci_high'])}]")
+        st.markdown(
+            f"<div class='wb-sec'>Statistical check</div>"
+            f"<div class='wb-finding'><b>{word}</b> · "
+            f"{int(sig['ci_level']*100)}% interval {iv}"
+            + (f" · p = {sig['p_value']:.4f}" if sig["p_value"] is not None else "")
+            + "</div>"
+            + (f"<div class='wb-caveat'>{sig['caveat']}</div>"
+               if sig["caveat"] else ""), unsafe_allow_html=True)
+
+    if conf and conf["components"]:
+        st.markdown("<div class='wb-sec'>How confidence was computed</div>",
                     unsafe_allow_html=True)
-
-        if rep["actions"]:
-            st.markdown("<div class='wb-sec'>Recommended action</div>",
-                        unsafe_allow_html=True)
-            for a in rep["actions"]:
-                st.markdown(f"<div class='wb-finding'>• {a}</div>",
-                            unsafe_allow_html=True)
-
-        if rep["findings"]:
-            st.markdown("<div class='wb-sec'>Findings</div>", unsafe_allow_html=True)
-            for f in rep["findings"]:
-                eids = "".join(f"<span class='wb-eid'>{e}</span>"
-                               for e in f["evidence_ids"])
-                st.markdown(f"<div class='wb-finding'>• {f['text']}{eids}</div>",
-                            unsafe_allow_html=True)
-
-        if rep["hypotheses"]:
-            st.markdown("<div class='wb-sec'>Hypotheses — not verified, "
-                        "not scored</div>", unsafe_allow_html=True)
-            for h in rep["hypotheses"]:
-                why = f" <span class='wb-hyp'>({h['why']})</span>" if h["why"] else ""
-                st.markdown(f"<div class='wb-finding wb-hyp'>• {h['text']}{why}</div>",
-                            unsafe_allow_html=True)
-
-    with right:
-        if conf and conf["score"] is not None:
-            # not st.metric: its delta arrow implies a trend that does not exist
-            cls = {"high": "wb-pill-hi", "medium": "wb-pill-md",
-                   "low": "wb-pill-lo"}.get(str(conf["band"]).lower(), "")
-            st.markdown(
-                f"<div class='wb-sec'>Confidence</div>"
-                f"<div style='display:flex; align-items:baseline; gap:.7rem;'>"
-                f"<span style='font-size:2.9rem; font-weight:680; line-height:1;'>"
-                f"{_fmt_score(conf['score'])}</span>"
-                f"<span style='color:#6B7280;'>/ 100</span>"
-                f"<span class='wb-pill {cls}'>{conf['band']}</span></div>",
-                unsafe_allow_html=True)
-            if conf["components"]:
-                st.plotly_chart(charts.confidence_components(conf),
-                                use_container_width=True,
-                                config={"displayModeBar": False})
-            for flag in conf["flags"]:
-                st.warning(ad.pretty_label(flag))
-
-        sig = st.session_state.norm.get("significance_test")
-        if sig:
-            word = STRENGTH_WORD.get(str(sig["strength"]).lower(), sig["strength"])
-            # the contract reports the effect as a fraction, so render the
-            # interval as percentages unless it is genuinely currency
-            if sig["effect_is_fraction"]:
-                iv = f"[{ad.pct(sig['ci_low'])}, {ad.pct(sig['ci_high'])}]"
-            else:
-                iv = f"[{ad.money(sig['ci_low'])}, {ad.money(sig['ci_high'])}]"
-            st.markdown(
-                f"<div class='wb-sec'>Statistical check</div>"
-                f"<div class='wb-finding'><b>{word}</b><br>"
-                f"{int(sig['ci_level']*100)}% interval {iv}"
-                + (f" · p = {sig['p_value']:.4f}" if sig['p_value'] is not None else "")
-                + "</div>", unsafe_allow_html=True)
-            if sig["caveat"]:
-                st.markdown(f"<div class='wb-caveat'>{sig['caveat']}</div>",
-                            unsafe_allow_html=True)
+        st.plotly_chart(charts.confidence_components(conf),
+                        use_container_width=True,
+                        config={"displayModeBar": False})
+        for flag in conf["flags"]:
+            st.warning(ad.pretty_label(flag))
 
 
 def render_answer_banner():
@@ -469,17 +698,10 @@ def render_answer_banner():
                  f"Confidence <b>{_fmt_score(conf['score'])}</b> · "
                  f"{conf['band']}</span>")
     st.markdown(
-        f"<div style='border:1px solid #E7E9EE; border-left:4px solid {accent};"
-        f" border-radius:10px; padding:1rem 1.2rem; background:#FCFDFE;"
-        f" margin:.2rem 0 1.1rem 0; display:flex; gap:1.2rem;"
-        f" align-items:flex-start; justify-content:space-between;'>"
-        f"<div class='wb-headline' style='margin:0;'>{rep['headline']}</div>"
+        f"<div class='wb-answer' style='border-left-color:{accent};'>"
+        f"<div class='wb-headline'>{rep['headline']}</div>"
         f"<div style='flex:0 0 auto;'>{badge}</div></div>",
         unsafe_allow_html=True)
-    if rep["actions"]:                       # second thing the reader sees: what to do about it
-        st.markdown("<div class='wb-sec'>Recommended action</div>"
-                    + "".join(f"<div class='wb-finding'>• {a}</div>" for a in rep["actions"]),
-                    unsafe_allow_html=True)
 
 
 def render_status_strip():
@@ -530,20 +752,44 @@ with st.sidebar:
                            help="For the 'can the LLM make up numbers?' question.")
     st.caption("Fixtures → works with no backend. Replay → the safety net. "
                "Live → the real agent.")
+    st.caption(f"build {BUILD}")
+
+# a labelled opener, in case the chevron is missed on a projector
+st.markdown("""
+<style>
+  [data-testid="stSidebarCollapsedControl"]::after,
+  [data-testid="collapsedControl"]::after {
+      content:"Demo controls"; font-size:.78rem; color:var(--ink-3);
+      margin-left:.45rem; align-self:center; white-space:nowrap;}
+</style>""", unsafe_allow_html=True)
 
 # --------------------------------------------------------------------------
 # header
 # --------------------------------------------------------------------------
-st.markdown("# WhyBot")
-st.markdown("<div class='wb-sub'>Ask why. Watch the investigation, not just the "
-            "answer.</div>", unsafe_allow_html=True)
+st.markdown(
+    "<div class='wb-head'><div class='wb-mark'>?</div><div>"
+    "<div class='wb-name'>WhyBot</div>"
+    "<div class='wb-sub'>Ask why. Watch the investigation, not just the answer."
+    "</div></div></div>", unsafe_allow_html=True)
 
 qcol, bcol = st.columns([5, 1], gap="small")
+# The question box keeps ONE stable widget key.
+#
+# It previously used key=f"q_{fixture_pick}_{mode}", so changing the source
+# created a different widget every time. Streamlit then held state for a widget
+# that no longer existed, and the next rerun raised
+#   KeyError: st.session_state has no key "$$WIDGET_ID-...-Live agent"
+# on the radio above it. A stable key plus an explicit value update does the
+# same job without orphaning state, and it preserves a question the user typed.
+QKEY = "wb_question"
 default_q = (FIXTURE_QUESTIONS.get(fixture_pick) if mode == "Fixtures"
              else "Why did revenue drop in the last two months of 2011?")
+if st.session_state.get("_wb_q_source") != (mode, fixture_pick):
+    st.session_state[QKEY] = default_q
+    st.session_state["_wb_q_source"] = (mode, fixture_pick)
 question = qcol.text_input(
-    "Question", value=default_q, label_visibility="collapsed",
-    placeholder="Why did revenue drop?", key=f"q_{fixture_pick}_{mode}")
+    "Question", key=QKEY, label_visibility="collapsed",
+    placeholder="Why did revenue drop?")
 run = bcol.button("Investigate", type="primary", use_container_width=True)
 if run:
     reset_run()               # flush the old answer, banner and trace BEFORE anything below is drawn
@@ -553,11 +799,33 @@ loader = st.empty()
 render_status_strip()
 render_answer_banner()
 
-trace_col, eve_col = st.columns([2, 3], gap="large")
-trace_col.markdown("<div class='wb-sec'>Investigation trace</div>",
-                   unsafe_allow_html=True)
-trace_box = trace_col.container()
-eve_col.markdown("<div class='wb-sec'>Evidence</div>", unsafe_allow_html=True)
+# Layout: the answer and the charts lead; the trace is opt-in.
+#
+# The trace is still the thing that proves the system reasoned rather than
+# guessed, so it is forced open WHILE a run streams -- watching it unfold is the
+# demo. Afterwards it collapses to whatever the toggle says, which keeps the
+# charts full width for the rest of the pitch.
+_t1, _t2 = st.columns([3, 1], gap="small")
+with _t2:
+    show_trace = st.toggle("Investigation trace", value=False, key="show_trace",
+                           help="The step-by-step reasoning. Open it when a judge "
+                                "asks where a number came from.")
+trace_visible = bool(show_trace) or bool(run)
+
+if trace_visible:
+    trace_col, eve_col = st.columns([2, 3], gap="large")
+    trace_col.markdown("<div class='wb-sec'>Investigation trace</div>",
+                       unsafe_allow_html=True)
+    try:
+        # scrolls internally: an 8-step trace no longer stretches the page
+        trace_box = trace_col.container(height=TRACE_HEIGHT, border=False)
+    except TypeError:                              # older Streamlit
+        trace_box = trace_col.container()
+    eve_col.markdown("<div class='wb-sec'>Evidence</div>", unsafe_allow_html=True)
+else:
+    eve_col = st.container()
+    eve_col.markdown("<div class='wb-sec'>Evidence</div>", unsafe_allow_html=True)
+    trace_box = None          # nothing is drawn; the render loop checks for this
 eve_slot = eve_col.empty()
 
 # --------------------------------------------------------------------------
@@ -583,7 +851,8 @@ if run:
         for ev in source:
             collected.append(ev)
             absorb(ev)
-            render_step(ev, trace_box)
+            if trace_box is not None:
+                render_step(ev, trace_box)
             if ev.get("type") == "step_finished" and ev.get("status") == "ok":
                 fig = live_chart_for(ev.get("tool"), st.session_state.norm)
                 if fig is not None:
@@ -614,18 +883,14 @@ if st.session_state.events:
     # Skip step_started in the steady-state render: during the run it is the
     # "working…" placeholder, but once the step has finished, replaying it would
     # show every step twice.
-    for ev in st.session_state.events:
-        if ev.get("type") == "step_started":
-            continue
-        render_step(ev, trace_box)
+    if trace_box is not None:
+        for ev in st.session_state.events:
+            if ev.get("type") == "step_started":
+                continue
+            render_step(ev, trace_box)
     with eve_col:
         eve_slot.empty()
         render_evidence_tabs()
-
-    if st.session_state.report:
-        st.divider()
-        st.markdown("<div class='wb-sec'>Full report</div>", unsafe_allow_html=True)
-        render_report()
 
     if show_raw and st.session_state.evidence:
         st.divider()
@@ -635,6 +900,7 @@ if st.session_state.events:
             with st.expander(f"{eid} · {rec['tool']}"):
                 st.json(rec["result"])
 else:
-    trace_box.info("Press **Investigate** to begin.")
+    if trace_box is not None:
+        trace_box.info("Press **Investigate** to begin.")
     with eve_col:
         eve_slot.info("Charts appear as the investigation produces evidence.")

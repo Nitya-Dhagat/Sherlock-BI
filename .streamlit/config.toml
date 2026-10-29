@@ -1,0 +1,17 @@
+# Pin the theme. Streamlit otherwise follows the viewer's system preference, and
+# on a laptop in dark mode the app's stylesheet painted dark text on Streamlit's
+# dark background, which made the trace titles invisible. The demo must look the
+# same on any machine, so the theme is fixed here rather than inherited.
+[theme]
+base = "light"
+primaryColor = "#1D4ED8"
+backgroundColor = "#F6F7F9"
+secondaryBackgroundColor = "#FFFFFF"
+textColor = "#0F172A"
+font = "sans serif"
+
+[server]
+headless = true
+
+[browser]
+gatherUsageStats = false
