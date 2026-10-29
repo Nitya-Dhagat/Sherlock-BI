@@ -10,4 +10,7 @@ jsonschema==4.26.0
 pytest==9.2.0
 google-genai==2.33.0
 python-dotenv==1.2.4
+holidays==0.107
+plotly==7.1.0
+streamlit==1.66.1
 python-calamine==0.9.0

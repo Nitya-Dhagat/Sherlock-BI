@@ -1,0 +1,481 @@
+[
+ {
+  "type": "run_started",
+  "run_id": "r_stub_main",
+  "question": "Why did revenue drop in the last two months of 2011?",
+  "ts": 0.0,
+  "prompt_version": "stub-v1",
+  "data_through": "2011-12-09"
+ },
+ {
+  "type": "step_started",
+  "step": 1,
+  "tool": "detect_anomaly",
+  "title": "Checking whether the drop is real",
+  "input": {
+   "metric": "net_revenue",
+   "period": {
+    "start": "2011-09-26",
+    "end": "2011-11-20"
+   },
+   "compare_to": "same_period_last_year"
+  }
+ },
+ {
+  "type": "step_finished",
+  "step": 1,
+  "tool": "detect_anomaly",
+  "status": "ok",
+  "evidence_id": "E1",
+  "title": "Checking whether the drop is real",
+  "summary": "Net revenue is 13.7% below the same period last year (z = \u22122.4), after adjusting for two fewer trading days.",
+  "result": {
+   "evidence_id": "E1",
+   "definition": "net_revenue = sum(quantity*unit_price) over product lines; cancellations negative; unattributed rows included",
+   "data_through": "2011-12-09",
+   "metric": "net_revenue",
+   "actual": 812340.55,
+   "expected": 941200.1,
+   "change_pct": -13.7,
+   "z_score": -2.4,
+   "severity": "high",
+   "method": "yoy",
+   "baseline": {
+    "start": "2010-09-27",
+    "end": "2010-11-21"
+   },
+   "trading_days": {
+    "actual": 38,
+    "expected": 40
+   },
+   "trading_day_adjusted": true,
+   "partial_period_excluded": true,
+   "checks": [
+    {
+     "method": "yoy",
+     "change_pct": -13.7,
+     "z_score": -2.4
+    },
+    {
+     "method": "stl",
+     "change_pct": -11.9,
+     "z_score": -2.1
+    }
+   ]
+  },
+  "duration_ms": 790
+ },
+ {
+  "type": "step_started",
+  "step": 2,
+  "tool": "drill_down",
+  "title": "Finding where it happened",
+  "input": {
+   "metric": "net_revenue",
+   "period": {
+    "start": "2011-09-26",
+    "end": "2011-11-20"
+   },
+   "compare_to": "same_period_last_year",
+   "dimensions": [
+    "country",
+    "customer_type"
+   ],
+   "top_k": 5
+  }
+ },
+ {
+  "type": "step_finished",
+  "step": 2,
+  "tool": "drill_down",
+  "status": "ok",
+  "evidence_id": "E2",
+  "title": "Finding where it happened",
+  "summary": "Wholesale-like customers explain 78% of the net change; the UK carries 71%.",
+  "result": {
+   "evidence_id": "E2",
+   "definition": "net_revenue = sum(quantity*unit_price) over product lines; cancellations negative; unattributed rows included",
+   "data_through": "2011-12-09",
+   "total_change": -128860.2,
+   "gross_decline": -146500.0,
+   "contributors": {
+    "country": [
+     {
+      "value": "United Kingdom",
+      "change": -91200.0,
+      "pct_change": -11.1,
+      "share_of_net_change": 0.71,
+      "share_of_gross_decline": 0.62,
+      "n_customers": 1480
+     },
+     {
+      "value": "Germany",
+      "change": -12400.0,
+      "pct_change": -18.0,
+      "share_of_net_change": 0.1,
+      "share_of_gross_decline": 0.08,
+      "n_customers": 52
+     }
+    ],
+    "customer_type": [
+     {
+      "value": "wholesale_like",
+      "change": -101000.0,
+      "pct_change": -15.2,
+      "share_of_net_change": 0.78,
+      "share_of_gross_decline": 0.69,
+      "n_customers": 640
+     }
+    ]
+   }
+  },
+  "duration_ms": 980
+ },
+ {
+  "type": "agent_message",
+  "step": 2,
+  "text": "The decline is concentrated in wholesale-like customers in the UK, so I will look at how that group's behaviour changed rather than splitting further."
+ },
+ {
+  "type": "step_started",
+  "step": 3,
+  "tool": "drill_down",
+  "title": "Slicing by product category",
+  "input": {
+   "metric": "net_revenue",
+   "period": {
+    "start": "2011-09-26",
+    "end": "2011-11-20"
+   },
+   "dimensions": [
+    "category"
+   ]
+  }
+ },
+ {
+  "type": "step_finished",
+  "step": 3,
+  "tool": "drill_down",
+  "status": "error",
+  "evidence_id": null,
+  "title": "Slicing by product category",
+  "error": {
+   "code": "EMPTY_SLICE",
+   "message": "category is not an available dimension; the classification has not been built yet"
+  },
+  "duration_ms": 240
+ },
+ {
+  "type": "agent_message",
+  "step": 3,
+  "text": "Category is not available, so I will not use it, and I will say so rather than guess."
+ },
+ {
+  "type": "step_started",
+  "step": 4,
+  "tool": "driver_decomposition",
+  "title": "Finding what changed in customer behaviour",
+  "input": {
+   "metric": "net_revenue",
+   "period": {
+    "start": "2011-09-26",
+    "end": "2011-11-20"
+   },
+   "compare_to": "same_period_last_year"
+  }
+ },
+ {
+  "type": "step_finished",
+  "step": 4,
+  "tool": "driver_decomposition",
+  "status": "ok",
+  "evidence_id": "E3",
+  "title": "Finding what changed in customer behaviour",
+  "summary": "69% of the fall is fewer active customers, not smaller orders.",
+  "result": {
+   "evidence_id": "E3",
+   "definition": "net_revenue = sum(quantity*unit_price) over product lines; cancellations negative; unattributed rows included",
+   "data_through": "2011-12-09",
+   "total_change": -128860.2,
+   "sum_check": -128860.2,
+   "effects": {
+    "active_customers": {
+     "change": -88500.0,
+     "share": 0.69
+    },
+    "orders_per_customer": {
+     "change": -21000.0,
+     "share": 0.16
+    },
+    "aov": {
+     "change": -9360.2,
+     "share": 0.07
+    },
+    "unattributed": {
+     "change": -10000.0,
+     "share": 0.08
+    }
+   }
+  },
+  "duration_ms": 1170
+ },
+ {
+  "type": "step_started",
+  "step": 5,
+  "tool": "customer_movement",
+  "title": "Separating retained, lost and new customers",
+  "input": {
+   "metric": "net_revenue",
+   "period": {
+    "start": "2011-09-26",
+    "end": "2011-11-20"
+   },
+   "compare_to": "same_period_last_year"
+  }
+ },
+ {
+  "type": "step_finished",
+  "step": 5,
+  "tool": "customer_movement",
+  "status": "ok",
+  "evidence_id": "E4",
+  "title": "Separating retained, lost and new customers",
+  "summary": "210 lapsed customers removed \u00a398.0k, against \u00a314.0k added by 150 new ones.",
+  "result": {
+   "evidence_id": "E4",
+   "definition": "net_revenue = sum(quantity*unit_price) over product lines; cancellations negative; unattributed rows included",
+   "data_through": "2011-12-09",
+   "window_days": 90,
+   "total_change": -128860.2,
+   "retained": {
+    "customers": 910,
+    "revenue_change": -20000.0,
+    "share_of_total_change": 0.16
+   },
+   "lost": {
+    "customers": 210,
+    "revenue_change": -98000.0,
+    "share_of_total_change": 0.76
+   },
+   "new": {
+    "customers": 150,
+    "revenue_change": 14000.0,
+    "share_of_total_change": -0.11
+   },
+   "unattributed": {
+    "revenue_change": -24860.2,
+    "share_of_total_change": 0.19
+   },
+   "top10_concentration": 0.41,
+   "concentrated_in_few_accounts": false,
+   "top_lost_accounts": [
+    {
+     "customer_id": 14646,
+     "revenue_change": -9800.0
+    },
+    {
+     "customer_id": 18102,
+     "revenue_change": -7400.0
+    }
+   ]
+  },
+  "duration_ms": 1360
+ },
+ {
+  "type": "agent_message",
+  "step": 5,
+  "text": "Fewer customers rather than smaller baskets. That is worth testing against normal variation before I call it a finding."
+ },
+ {
+  "type": "step_started",
+  "step": 6,
+  "tool": "significance_test",
+  "title": "Testing whether the finding is solid",
+  "input": {
+   "metric": "net_revenue",
+   "period": {
+    "start": "2011-09-26",
+    "end": "2011-11-20"
+   },
+   "compare_to": "same_period_last_year",
+   "segment": {
+    "dimension": "customer_type",
+    "value": "wholesale_like"
+   }
+  }
+ },
+ {
+  "type": "step_finished",
+  "step": 6,
+  "tool": "significance_test",
+  "status": "ok",
+  "evidence_id": "E5",
+  "title": "Testing whether the finding is solid",
+  "summary": "Supporting: the segment is down 15.2%, and the 95% interval [\u221223.1%, \u22127.4%] excludes zero.",
+  "result": {
+   "evidence_id": "E5",
+   "definition": "net_revenue = sum(quantity*unit_price) over product lines; cancellations negative; unattributed rows included",
+   "data_through": "2011-12-09",
+   "method": "customer-level bootstrap, 2000 resamples",
+   "effect_size": -0.152,
+   "ci_low": -0.231,
+   "ci_high": -0.074,
+   "p_value": 0.003,
+   "strength": "supporting",
+   "n_customers": 640,
+   "caveat": "Segment chosen after viewing the data; p-values are optimistic. Prefer the interval."
+  },
+  "duration_ms": 1550
+ },
+ {
+  "type": "step_started",
+  "step": 7,
+  "tool": "check_external_factors",
+  "title": "Checking the external explanations",
+  "input": {
+   "metric": "net_revenue",
+   "period": {
+    "start": "2011-09-26",
+    "end": "2011-11-20"
+   },
+   "compare_to": "same_period_last_year"
+  }
+ },
+ {
+  "type": "step_finished",
+  "step": 7,
+  "tool": "check_external_factors",
+  "status": "ok",
+  "evidence_id": "E6",
+  "title": "Checking the external explanations",
+  "summary": "Two fewer trading days; prices up only 1.8%; no exchange-rate signal.",
+  "result": {
+   "evidence_id": "E6",
+   "definition": "net_revenue = sum(quantity*unit_price) over product lines; cancellations negative; unattributed rows included",
+   "data_through": "2011-12-09",
+   "trading_days": {
+    "actual": 38,
+    "expected": 40,
+    "delta": -2
+   },
+   "price_index_change_pct": 1.8,
+   "products_dropped": 34,
+   "products_launched": 21,
+   "holiday_flags": [
+    "UK summer bank holiday not in window"
+   ],
+   "tested_series": [
+    {
+     "name": "GBP/EUR weekly change vs non-UK revenue",
+     "effect": 0.04,
+     "strength": "none"
+    }
+   ],
+   "no_data": [
+    "competitor pricing",
+    "marketing spend"
+   ]
+  },
+  "duration_ms": 1740
+ },
+ {
+  "type": "step_started",
+  "step": 8,
+  "tool": "forecast_scenario",
+  "title": "Projecting the impact",
+  "input": {
+   "metric": "net_revenue",
+   "period": {
+    "start": "2011-09-26",
+    "end": "2011-11-20"
+   },
+   "compare_to": "same_period_last_year",
+   "horizon_weeks": 4,
+   "segment": {
+    "dimension": "customer_type",
+    "value": "wholesale_like"
+   }
+  }
+ },
+ {
+  "type": "step_finished",
+  "step": 8,
+  "tool": "forecast_scenario",
+  "status": "ok",
+  "evidence_id": "E7",
+  "title": "Projecting the impact",
+  "summary": "Recovering the segment is worth about \u00a322k a week over the next four weeks.",
+  "result": {
+   "evidence_id": "E7",
+   "definition": "net_revenue = sum(quantity*unit_price) over product lines; cancellations negative; unattributed rows included",
+   "data_through": "2011-12-09",
+   "horizon_weeks": 4,
+   "method": "exponential smoothing with yoy seasonal index",
+   "caveat": "Simple projection; not a causal estimate.",
+   "baseline": [
+    {
+     "week_start": "2011-11-21",
+     "value": 210000.0
+    },
+    {
+     "week_start": "2011-11-28",
+     "value": 205000.0
+    }
+   ],
+   "what_if": [
+    {
+     "week_start": "2011-11-21",
+     "value": 232000.0
+    },
+    {
+     "week_start": "2011-11-28",
+     "value": 227000.0
+    }
+   ]
+  },
+  "duration_ms": 1930
+ },
+ {
+  "type": "report",
+  "report": {
+   "headline": "Net revenue fell 13.7% year over year, driven by lost wholesale-like customers.",
+   "findings": [
+    {
+     "text": "Wholesale-like customers explain 78% of the net decline.",
+     "evidence_ids": [
+      "E2"
+     ]
+    }
+   ],
+   "actions": [
+    {
+     "text": "Contact the top lost accounts.",
+     "evidence_ids": [
+      "E4"
+     ]
+    }
+   ],
+   "hypotheses": [
+    "A competitor may have won these accounts (cannot be verified from this data)."
+   ]
+  },
+  "confidence": {
+   "score": 74.5,
+   "band": "Medium",
+   "components": {
+    "coverage": 0.78,
+    "significance": 0.85,
+    "specificity": 0.71,
+    "robustness": 0.5
+   },
+   "flags": []
+  }
+ },
+ {
+  "type": "run_finished",
+  "run_id": "r_stub_main",
+  "status": "ok",
+  "steps": 8,
+  "duration_ms": 9760
+ }
+]
